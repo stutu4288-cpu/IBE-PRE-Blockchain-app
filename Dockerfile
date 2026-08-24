@@ -1,5 +1,5 @@
-# Use Tomcat 9 with JDK 17 (Fixes Linux Cgroup v2 NullPointerException)
-FROM tomcat:9.0-jdk17-openjdk-slim
+# Use Tomcat 9 with OpenJDK 17 (Fixes Linux Cgroup v2 NullPointerException)
+FROM tomcat:9.0-jdk17
 
 # Remove default ROOT application
 RUN rm -rf /usr/local/tomcat/webapps/ROOT /usr/local/tomcat/webapps/ROOT.war
