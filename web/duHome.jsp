@@ -85,7 +85,7 @@
                         <div class="col-lg-10 content text-center" data-aos="fade-right" data-aos-delay="100">
                             <h3 class="mb-3 font-weight-bold text-primary">Welcome <%=name != null ? name.toUpperCase() : "DATA USER"%>!</h3>
                             <div class="card border-0 shadow rounded-lg overflow-hidden mb-4 p-2 bg-white">
-                                <img src="${pageContext.request.contextPath}/assets/img/encryption.jpg?v=3" class="img-fluid w-100 rounded" alt="Data User Encryption Portal" style="max-height: 420px; object-fit: cover; display: block;" onerror="this.src='assets/img/encryption.jpg?v=3';" />
+                                <img src="assets/img/encryption.jpg?v=10" class="img-fluid w-100 rounded" alt="Data User Encryption Portal" style="max-height: 450px; object-fit: contain; background: #ffffff;" onerror="this.src='${pageContext.request.contextPath}/assets/img/encryption.jpg?v=10';" />
                             </div>
                             
                             <div class="row justify-content-center mt-2">
