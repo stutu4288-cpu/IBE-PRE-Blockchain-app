@@ -133,10 +133,9 @@
                         </div>
                     <% } %>
 
-                    <center><h3>Data Owner Login</h3></center><br>
-                    <div class="row mt-3">
-                        <div class="col-lg-6">
-                            <img src="assets/img/dologin.png" width="450" height="400" class="img-fluid rounded shadow-sm" />
+                    <div class="row mt-3 align-items-center">
+                        <div class="col-lg-6 mb-4 mb-lg-0">
+                            <img src="assets/img/dologin.png" class="img-fluid rounded shadow-sm w-100" style="max-height: 420px; object-fit: cover;" alt="Data Owner Login" />
                         </div>
                         <div class="col-lg-6">
                             <form action="doSignin.jsp" method="post" role="form" id="doLoginForm" onsubmit="return validateLoginForm();">

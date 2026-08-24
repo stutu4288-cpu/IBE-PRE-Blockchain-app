@@ -133,10 +133,9 @@
                         </div>
                     <% } %>
 
-                    <center><h3>Data User Login</h3></center><br>
-                    <div class="row mt-3">
-                        <div class="col-lg-6">
-                            <img src="assets/img/dulogin.jpg" width="450" height="400" class="img-fluid rounded shadow-sm" />
+                    <div class="row mt-3 align-items-center">
+                        <div class="col-lg-6 mb-4 mb-lg-0">
+                            <img src="assets/img/dulogin.jpg" class="img-fluid rounded shadow-sm w-100" style="max-height: 420px; object-fit: cover;" alt="Data User Login" onerror="this.src='assets/img/login.jpg';" />
                         </div>
                         <div class="col-lg-6">
                             <form action="duSignin.jsp" method="post" role="form" id="duLoginForm" onsubmit="return validateLoginForm();">
