@@ -35,7 +35,7 @@
         <link href="assets/css/style.css" rel="stylesheet">
     </head>
 
-    <body>
+    <body class="home-page">
 
         <!-- ======= Header ======= -->
         <header id="header" class="fixed-top">
