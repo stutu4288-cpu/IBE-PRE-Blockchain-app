@@ -7,7 +7,7 @@
   },
   "deploy": {
     "startCommand": "catalina.sh run",
-    "healthcheckPath": "/",
+    "healthcheckPath": "/index.jsp",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
