@@ -1,0 +1,182 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package Action;
+
+import DBconnection.SQLconnection;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+
+/**
+ *
+ * @author JAVA-JP
+ */
+@MultipartConfig(maxFileSize = 16177215) 
+public class DORegister extends HttpServlet {
+
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException, Exception {
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+            String name    = request.getParameter("username");
+            String mail    = request.getParameter("email");
+            String dob     = request.getParameter("dob");
+            String gender  = request.getParameter("gender");
+            String phone   = request.getParameter("phone");
+            String address = request.getParameter("address");
+            String pass    = request.getParameter("pass");
+
+            // --- Server-Side Input Sanitization & Professional Validation ---
+            if (name == null || mail == null || pass == null || phone == null ||
+                name.trim().isEmpty() || mail.trim().isEmpty() || pass.trim().isEmpty() || phone.trim().isEmpty()) {
+                response.sendRedirect("doSignup.jsp?Error=Empty_Fields");
+                return;
+            }
+
+            name    = name.trim();
+            mail    = mail.trim();
+            phone   = phone.trim();
+            address = address != null ? address.trim() : "";
+
+            // Validate Email Regex
+            if (!mail.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")) {
+                response.sendRedirect("doSignup.jsp?Error=Invalid_Email");
+                return;
+            }
+
+            // Validate Phone Regex (Exactly 10 numeric digits)
+            if (!phone.matches("^[0-9]{10}$")) {
+                response.sendRedirect("doSignup.jsp?Error=Invalid_Phone");
+                return;
+            }
+
+            // Validate Password Length (min 4 chars)
+            if (pass.length() < 4) {
+                response.sendRedirect("doSignup.jsp?Error=Short_Password");
+                return;
+            }
+
+            Connection conn = SQLconnection.getconnection();
+            if (conn == null) {
+                System.err.println("Database connection is NULL");
+                response.sendRedirect("doSignup.jsp?DB_Error");
+                return;
+            }
+
+            try {
+                // Check duplicate Email or Phone
+                PreparedStatement chk = conn.prepareStatement("SELECT email, phone FROM do_reg WHERE email=? OR phone=?");
+                chk.setString(1, mail);
+                chk.setString(2, phone);
+                ResultSet rs = chk.executeQuery();
+                if (rs.next()) {
+                    if (mail.equalsIgnoreCase(rs.getString("email"))) {
+                        response.sendRedirect("doSignup.jsp?Error=Email_Exists");
+                    } else {
+                        response.sendRedirect("doSignup.jsp?Error=Phone_Exists");
+                    }
+                    return;
+                }
+
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                String regDate = sdf.format(new java.util.Date());
+
+                String sql = "INSERT INTO do_reg(name, dob, email, gender, phone, address, password, Private_key, reg_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                PreparedStatement statement = conn.prepareStatement(sql);
+                statement.setString(1, name);
+                statement.setString(2, dob);
+                statement.setString(3, mail);
+                statement.setString(4, gender);
+                statement.setString(5, phone);
+                statement.setString(6, address);
+                statement.setString(7, new PasswordUtil().hash(pass));
+                statement.setString(8, new TDES().encrypt(name));
+                statement.setString(9, regDate);
+
+                int row = statement.executeUpdate();
+                if (row > 0) {
+                    response.sendRedirect("doLogin.jsp?Register_Success");
+                } else {
+                    response.sendRedirect("doSignup.jsp?Register_Failed");
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                response.sendRedirect("doSignup.jsp?Error=Server_Error");
+            }
+
+        }
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    /**
+     * Handles the HTTP <code>GET</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            processRequest(request, response);
+        } catch (Exception ex) {
+            Logger.getLogger(DORegister.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            processRequest(request, response);
+        } catch (Exception ex) {
+            Logger.getLogger(DORegister.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }// </editor-fold>
+
+}

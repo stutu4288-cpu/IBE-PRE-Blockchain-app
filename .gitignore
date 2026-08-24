@@ -1,0 +1,6 @@
+build/
+nbproject/private/
+*.log
+TestFTP.java
+TestFTP.class
+cookies.txt
