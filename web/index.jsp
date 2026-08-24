@@ -84,12 +84,12 @@
                         <p class="text-muted">Identity-Based Proxy Re-Encryption (IBE-PRE) & Ethereum Blockchain Access Control</p>
                     </div>
                     <div class="row justify-content-center mb-5">
-                        <div class="col-lg-8" data-aos="fade-up">
-                            <div class="card border-0 shadow-sm rounded-lg overflow-hidden text-center">
-                                <img src="assets/img/proxy_reencryption_flow.png" class="img-fluid w-100" alt="Proxy Re-Encryption Flow" style="max-height: 400px; object-fit: contain; background: #fff;">
+                        <div class="col-lg-12" data-aos="fade-up">
+                            <div class="card border-0 shadow-sm rounded-lg overflow-hidden text-center p-3">
+                                <img src="assets/img/proxy_reencryption_flow.png" class="img-fluid w-100" alt="Proxy Re-Encryption Flow" style="width: 100%; max-height: 650px; object-fit: contain; background: #fff;">
                                 <div class="card-body bg-white text-center">
-                                    <h5 class="card-title font-weight-bold text-primary">Proxy Re-Encryption Workflow</h5>
-                                    <p class="card-text text-secondary small">Re-encryption key generation ($rk_{A \to B}$) allows proxy decryption without private key exposure.</p>
+                                    <h4 class="card-title font-weight-bold text-primary">Proxy Re-Encryption Cryptographic Workflow</h4>
+                                    <p class="card-text text-secondary lead mb-0">Outsourced Identity-Based Encryption (IBE) & Re-Encryption Key Generation ($rk_{A \to B}$) granting decryption rights without disclosing private keys.</p>
                                 </div>
                             </div>
                         </div>
