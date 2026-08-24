@@ -84,7 +84,9 @@
                     <div class="row justify-content-center">
                         <div class="col-lg-10 content text-center" data-aos="fade-right" data-aos-delay="100">
                             <h3 class="mb-3 font-weight-bold text-primary">Welcome <%=name != null ? name.toUpperCase() : "DATA USER"%>!</h3>
-                            <img src="assets/img/duhome.jpg" class="img-fluid rounded shadow mb-4" style="max-width: 680px; max-height: 340px; width: 100%; height: auto;" alt="Data User Portal" />
+                            <div class="card border-0 shadow rounded-lg overflow-hidden mb-4 p-2 bg-white">
+                                <img src="assets/img/encryption.jpg" class="img-fluid w-100 rounded" alt="Data User Encryption Portal" style="max-height: 420px; object-fit: cover;" />
+                            </div>
                             
                             <div class="row justify-content-center mt-2">
                                 <div class="col-md-5 m-2 p-3 bg-light rounded border text-center shadow-sm">
