@@ -1,4 +1,4 @@
-﻿<%-- 
+<%-- 
     Document   : index
     Created on : 26 Aug, 2024, 4:51:26 PM
     Author     : JAVA-JP
@@ -100,8 +100,30 @@
                                 </div>
                                 <div class="col-md-3 m-2 p-3 bg-light rounded border text-center">
                                     <h5 style="color:#eb5d1e;">Requested Files</h5>
-                                    <p class="text-muted small mb-2">Manage user download requests</p>
-                                    <a href="requestedFiles.jsp" class="btn btn-primary btn-sm">Requests</a>
+                                    <p class="text-muted small mb-2">Manage access requests</p>
+                                    <a href="requestedFiles.jsp" class="btn btn-primary btn-sm">View Requests</a>
+                                </div>
+                            </div>
+
+                            <!-- Cryptographic Workflow Cards -->
+                            <div class="row mt-4 justify-content-center">
+                                <div class="col-md-5 mb-3">
+                                    <div class="card shadow-sm border-0 h-100">
+                                        <img src="assets/img/security_overview.jpg" class="card-img-top" alt="Security Overview" style="max-height: 220px; object-fit: contain; background: #f8f9fa;">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-primary font-weight-bold">Identity-Based Encryption</h5>
+                                            <p class="card-text text-muted small">Outsource encrypted data blocks ($B_1, B_2, B_3$) to DriveHQ Cloud with SHA-256 block integrity digests.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card shadow-sm border-0 h-100">
+                                        <img src="assets/img/proxy_reencryption_flow.png" class="card-img-top" alt="Re-Encryption Flow" style="max-height: 220px; object-fit: contain; background: #f8f9fa;">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-primary font-weight-bold">Proxy Re-Encryption Rights</h5>
+                                            <p class="card-text text-muted small">Generate Re-Encryption Keys ($rk_{A \to B}$) granting decryption rights without disclosing your master private key.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

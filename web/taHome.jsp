@@ -94,6 +94,28 @@
                                     <a href="reqFiles.jsp" class="btn btn-primary btn-sm">View Requests</a>
                                 </div>
                             </div>
+
+                            <!-- Blockchain Smart Contract Audit Overview -->
+                            <div class="row mt-4 justify-content-center">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card shadow-sm border-0 h-100">
+                                        <img src="assets/img/blockchain_smart_contracts.png" class="card-img-top" alt="Blockchain Smart Contracts" style="max-height: 250px; object-fit: contain; background: #f8f9fa;">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-primary font-weight-bold">Ethereum Smart Contract Audit</h5>
+                                            <p class="card-text text-muted small">On-chain registration and access control policies deployed on Ethereum EVM via <code>AccessControl.sol</code>.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-5 mb-3">
+                                    <div class="card shadow-sm border-0 h-100">
+                                        <img src="assets/img/smart_contract_concept.png" class="card-img-top" alt="Smart Contract Concept" style="max-height: 250px; object-fit: contain; background: #f8f9fa;">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-primary font-weight-bold">Decentralized Trust Authority</h5>
+                                            <p class="card-text text-muted small">Master Key generation and IBE Master Parameter distribution for verified Data Owners & Users.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

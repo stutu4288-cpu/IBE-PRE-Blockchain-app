@@ -76,6 +76,36 @@
 
         <main id="main">
 
+            <!-- ======= System Architecture & Workflow Section ======= -->
+            <section id="architecture" class="about bg-light py-5">
+                <div class="container">
+                    <div class="section-title text-center mb-4">
+                        <h2>System Architecture & Cryptographic Workflow</h2>
+                        <p class="text-muted">Identity-Based Proxy Re-Encryption (IBE-PRE) & Ethereum Blockchain Access Control</p>
+                    </div>
+                    <div class="row align-items-center mb-5">
+                        <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
+                            <div class="card border-0 shadow-sm rounded-lg overflow-hidden">
+                                <img src="assets/img/system_architecture.jpeg" class="img-fluid w-100" alt="System Architecture">
+                                <div class="card-body bg-white text-center">
+                                    <h5 class="card-title font-weight-bold text-primary">System Overview & Cloud Edge Proxy</h5>
+                                    <p class="card-text text-secondary small">Outsourced IBE storage, Edge Proxy Re-Encryption, and decentralized Ethereum audit trail.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6" data-aos="fade-left">
+                            <div class="card border-0 shadow-sm rounded-lg overflow-hidden">
+                                <img src="assets/img/proxy_reencryption_flow.png" class="img-fluid w-100" alt="Proxy Re-Encryption Flow">
+                                <div class="card-body bg-white text-center">
+                                    <h5 class="card-title font-weight-bold text-primary">Proxy Re-Encryption Workflow</h5>
+                                    <p class="card-text text-secondary small">Re-encryption key generation ($rk_{A \to B}$) allows proxy decryption without private key exposure.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- ======= About Section ======= -->
             <section id="about" class="about">
                 <div class="container">
