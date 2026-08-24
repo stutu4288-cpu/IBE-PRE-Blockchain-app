@@ -81,21 +81,26 @@
                         String name = (String) session.getAttribute("duname");
                         String email = (String) session.getAttribute("dumail");
                     %>
-                    <div class="row">
-                        <div class="col-lg-12 content text-center" data-aos="fade-right" data-aos-delay="100">
-                            <h3 class="mb-2">Welcome <%=name != null ? name.toUpperCase() : "DATA USER"%>!</h3>
-                            <img src="assets/img/duhome.jpg" class="img-fluid rounded shadow mb-3" style="max-width: 680px; max-height: 340px; width: 100%; height: auto;" />
+                    <div class="row justify-content-center">
+                        <div class="col-lg-10 content text-center" data-aos="fade-right" data-aos-delay="100">
+                            <h3 class="mb-3 font-weight-bold text-primary">Welcome <%=name != null ? name.toUpperCase() : "DATA USER"%>!</h3>
+                            <div class="card border-0 shadow rounded-lg overflow-hidden mb-4 p-3 bg-white">
+                                <img src="assets/img/duhome.jpg" class="img-fluid w-100 rounded" alt="Data User Portal" style="max-height: 420px; object-fit: cover;" onerror="this.src='assets/img/security_overview.jpg';" />
+                                <div class="card-body py-2">
+                                    <h5 class="text-secondary mb-0">Decentralized Data Recipient Portal</h5>
+                                </div>
+                            </div>
                             
                             <div class="row justify-content-center mt-2">
-                                <div class="col-md-4 m-2 p-3 bg-light rounded border text-center">
+                                <div class="col-md-5 m-2 p-3 bg-light rounded border text-center shadow-sm">
                                     <h5 style="color:#eb5d1e;">Search Files</h5>
-                                    <p class="text-muted small mb-2">Search encrypted cloud files</p>
-                                    <a href="searchFile.jsp" class="btn btn-primary btn-sm">Search Files</a>
+                                    <p class="text-muted small mb-2">Search encrypted cloud files by keyword</p>
+                                    <a href="searchFile.jsp" class="btn btn-primary btn-sm px-4">Search Files</a>
                                 </div>
-                                <div class="col-md-4 m-2 p-3 bg-light rounded border text-center">
+                                <div class="col-md-5 m-2 p-3 bg-light rounded border text-center shadow-sm">
                                     <h5 style="color:#eb5d1e;">Download Files</h5>
-                                    <p class="text-muted small mb-2">Access & decrypt approved files</p>
-                                    <a href="downloadFiles.jsp" class="btn btn-primary btn-sm">Download Files</a>
+                                    <p class="text-muted small mb-2">Access & decrypt approved files with your key</p>
+                                    <a href="downloadFiles.jsp" class="btn btn-primary btn-sm px-4">Download Files</a>
                                 </div>
                             </div>
 
