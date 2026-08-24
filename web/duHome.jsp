@@ -84,23 +84,15 @@
                     <div class="row justify-content-center">
                         <div class="col-lg-10 content text-center" data-aos="fade-right" data-aos-delay="100">
                             <h3 class="mb-3 font-weight-bold text-primary">Welcome <%=name != null ? name.toUpperCase() : "DATA USER"%>!</h3>
-                            <div class="card border-0 shadow rounded-lg overflow-hidden mb-4 p-3 bg-white">
-                                <img src="assets/img/download.jpg" class="img-fluid w-100 rounded" alt="Data User Search & Download Portal" style="max-height: 380px; object-fit: contain; background: #f8f9fa;" />
-                                <div class="card-body py-2">
-                                    <h5 class="text-primary font-weight-bold mb-0">Identity-Based Proxy Re-Encryption Data Recipient Portal</h5>
-                                    <p class="text-muted small">Search encrypted datasets, request re-encryption access, and decrypt authorized files on-demand.</p>
-                                </div>
-                            </div>
+                            <img src="assets/img/duhome.jpg" class="img-fluid rounded shadow mb-4" style="max-width: 680px; max-height: 340px; width: 100%; height: auto;" alt="Data User Portal" />
                             
                             <div class="row justify-content-center mt-2">
                                 <div class="col-md-5 m-2 p-3 bg-light rounded border text-center shadow-sm">
-                                    <img src="assets/img/search.png" alt="Search" style="height: 50px;" class="mb-2" />
                                     <h5 style="color:#eb5d1e;">Search Files</h5>
                                     <p class="text-muted small mb-2">Search encrypted cloud files by keyword</p>
                                     <a href="searchFile.jsp" class="btn btn-primary btn-sm px-4">Search Files</a>
                                 </div>
                                 <div class="col-md-5 m-2 p-3 bg-light rounded border text-center shadow-sm">
-                                    <img src="assets/img/download.jpg" alt="Download" style="height: 50px; object-fit: contain;" class="mb-2" />
                                     <h5 style="color:#eb5d1e;">Download Files</h5>
                                     <p class="text-muted small mb-2">Access & decrypt approved files with your key</p>
                                     <a href="downloadFiles.jsp" class="btn btn-primary btn-sm px-4">Download Files</a>
