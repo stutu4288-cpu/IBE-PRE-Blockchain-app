@@ -834,7 +834,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                                                  <option value="+81">🇯🇵 +81 (JP)</option>
                                                  <option value="+971">🇦🇪 +971 (AE)</option>
                                              </select>
-                                             <input type="tel" class="form-control col-md-7" name="phone" id="phone" placeholder="10 digits (e.g. 0557185634)" pattern="[0-9]{10}" title="Exactly 10 numeric digits required (e.g. 0557185634)" maxlength="10" oninput="updatePhonePreview();" required>
+                                             <input type="tel" class="form-control col-md-7" name="phone" id="phone" placeholder="10 digits (e.g. 0557185634)" pattern="[0-9]{{10}}" title="Exactly 10 numeric digits required (e.g. 0557185634)" maxlength="10" oninput="updatePhonePreview();" required>
                                          </div>
                                          <small id="phonePreview" class="form-text font-weight-bold text-muted mt-1"></small>
                                      </div>
