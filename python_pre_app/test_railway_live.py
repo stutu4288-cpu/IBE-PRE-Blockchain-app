@@ -35,14 +35,14 @@ def test_railway():
     assert res_du.status == 200
     assert "/user/dashboard" in res_du.geturl()
 
-    # 5. Test CSP Login
-    login_csp = urllib.parse.urlencode({'email': 'csp', 'password': 'csp', 'role': 'csp', 'cspkey': 'csp'}).encode('utf-8')
+    # 5. Test CSP Login (Username: csp, Password: CSP or csp)
+    login_csp = urllib.parse.urlencode({'email': 'csp', 'password': 'CSP', 'role': 'csp', 'cspkey': 'CSP'}).encode('utf-8')
     res_csp = opener.open(f"{RAILWAY_URL}/login", login_csp)
     print(f"[5] POST /login (CSP) -> Status {res_csp.status}, Final URL: {res_csp.geturl()}")
     assert res_csp.status == 200
     assert "/csp/dashboard" in res_csp.geturl()
 
-    # 6. Test Proxy Login
+    # 6. Test Proxy Login (Username: Cloud or proxy, Password: Cloud or proxy)
     login_proxy = urllib.parse.urlencode({'email': 'Cloud', 'password': 'Cloud', 'role': 'proxy'}).encode('utf-8')
     res_proxy = opener.open(f"{RAILWAY_URL}/login", login_proxy)
     print(f"[6] POST /login (Proxy) -> Status {res_proxy.status}, Final URL: {res_proxy.geturl()}")
