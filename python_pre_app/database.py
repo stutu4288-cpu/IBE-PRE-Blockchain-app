@@ -53,9 +53,12 @@ def dict_factory(cursor, row):
     return {col[0]: row[idx] for idx, col in enumerate(cursor.description)}
 
 
+_MYSQL_WARNED = False
+
 def get_connection():
     """Returns an active DBConnection (MySQL primary, SQLite fallback)."""
-    if HAS_PYMYSQL:
+    global _MYSQL_WARNED
+    if HAS_PYMYSQL and (MYSQL_HOST != "127.0.0.1" or os.environ.get("MYSQLHOST") or os.environ.get("MYSQL_HOST")):
         try:
             m_conn = pymysql.connect(
                 host=MYSQL_HOST,
@@ -66,13 +69,21 @@ def get_connection():
                 charset='utf8mb4',
                 cursorclass=pymysql.cursors.DictCursor,
                 autocommit=True,
-                connect_timeout=10,
+                connect_timeout=5,
                 read_timeout=30,
                 write_timeout=30
             )
             return DBConnection(is_mysql=True, conn=m_conn)
         except Exception as e:
-            sys.stderr.write(f"[DB Warning] MySQL unreachable ({e}), falling back to SQLite.\n")
+            if not _MYSQL_WARNED:
+                sys.stdout.write(f"[DB Engine] MySQL connection unestablished. Operating in SQLite Embedded Mode.\n")
+                sys.stdout.flush()
+                _MYSQL_WARNED = True
+
+    if not _MYSQL_WARNED and (MYSQL_HOST == "127.0.0.1" and not os.environ.get("MYSQLHOST")):
+        sys.stdout.write(f"[DB Engine] Operating in SQLite Embedded Database Mode.\n")
+        sys.stdout.flush()
+        _MYSQL_WARNED = True
 
     s_conn = sqlite3.connect(SQLITE_PATH)
     s_conn.row_factory = dict_factory
