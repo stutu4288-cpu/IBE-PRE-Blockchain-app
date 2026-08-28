@@ -1,0 +1,12 @@
+# Railway Nixpacks Configuration for Pure Python Platform
+[providers]
+providers = ["python"]
+
+[phases.setup]
+nixPkgs = ["python311"]
+
+[phases.install]
+cmds = ["cd python_pre_app && pip install -r requirements.txt"]
+
+[start]
+cmd = "cd python_pre_app && python -u app.py"
