@@ -1802,7 +1802,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
             actions += f' <a href="/ta/delete?id={uid}&role=Owner" class="btn btn-danger btn-sm" onclick="return confirm(\'Are you sure you want to delete this Data Owner account? This will also remove their uploaded files.\');"><i class="icofont-trash"></i> Delete</a>'
 
-            key_badge = '<span class="badge badge-success" style="font-size:12px; padding:5px 8px;"><i class="icofont-check"></i> Issued (Emailed to User)</span>' if pkey else '<span class="badge badge-secondary" style="font-size:12px; padding:5px 8px;"><i class="icofont-lock"></i> Pending Approval</span>'
+            key_badge = f'<span class="badge badge-success" style="font-size:12px; padding:5px 8px;"><i class="icofont-key"></i> Issued: <code class="text-white">{pkey}</code></span>' if (pkey and pkey != 'waiting') else '<span class="badge badge-secondary" style="font-size:12px; padding:5px 8px;"><i class="icofont-lock"></i> Pending Approval</span>'
 
             table_rows += f"""
             <tr>
@@ -1872,7 +1872,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
             actions += f' <a href="/ta/delete?id={uid}&role=User" class="btn btn-danger btn-sm" onclick="return confirm(\'Are you sure you want to delete this Data User account?\');"><i class="icofont-trash"></i> Delete</a>'
 
-            key_badge = '<span class="badge badge-success" style="font-size:12px; padding:5px 8px;"><i class="icofont-check"></i> Issued (Emailed to User)</span>' if pkey else '<span class="badge badge-secondary" style="font-size:12px; padding:5px 8px;"><i class="icofont-lock"></i> Pending Approval</span>'
+            key_badge = f'<span class="badge badge-success" style="font-size:12px; padding:5px 8px;"><i class="icofont-key"></i> Issued: <code class="text-white">{pkey}</code></span>' if (pkey and pkey != 'waiting') else '<span class="badge badge-secondary" style="font-size:12px; padding:5px 8px;"><i class="icofont-lock"></i> Pending Approval</span>'
 
             table_rows += f"""
             <tr>
