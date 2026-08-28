@@ -286,6 +286,69 @@ def init_db():
 
     db.commit()
     db.close()
+    seed_db()
+
+
+def seed_db():
+    """Populates default initial seed accounts and sample files if database is empty."""
+    try:
+        db = get_connection()
+        c = db.cursor()
+
+        # Seed Data Owner
+        c.execute("SELECT COUNT(*) as cnt FROM do_reg")
+        r_do = c.fetchone()
+        count_do = (r_do['cnt'] if isinstance(r_do, dict) else r_do[0]) if r_do else 0
+        if count_do == 0:
+            sql_do = """
+            INSERT INTO do_reg (name, dob, email, phone, address, password, status, private_key)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """ if db.is_mysql else """
+            INSERT INTO do_reg (name, dob, email, phone, address, password, status, private_key)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """
+            c.execute(sql_do, ("DataOwner", "1990-01-01", "sikapalinkz@gmail.com", "+233557185634", "Accra", "1234", "Approved", "s8lQ64h2tJ4="))
+
+        # Seed Data User
+        c.execute("SELECT COUNT(*) as cnt FROM du_reg")
+        r_du = c.fetchone()
+        count_du = (r_du['cnt'] if isinstance(r_du, dict) else r_du[0]) if r_du else 0
+        if count_du == 0:
+            sql_du = """
+            INSERT INTO du_reg (name, dob, email, phone, address, password, status, private_key)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """ if db.is_mysql else """
+            INSERT INTO du_reg (name, dob, email, phone, address, password, status, private_key)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """
+            c.execute(sql_du, ("DataUser", "1995-05-05", "stutu4288@gmail.com", "+233241234567", "Kumasi", "1234", "Approved", "VAC4uFdeRe8="))
+
+        # Seed Sample File
+        c.execute("SELECT COUNT(*) as cnt FROM do_files")
+        r_f = c.fetchone()
+        count_f = (r_f['cnt'] if isinstance(r_f, dict) else r_f[0]) if r_f else 0
+        if count_f == 0:
+            sample_payload = b"Sample Cloud Security Whitepaper Document Payload - IEEE Proxy Re-Encryption Platform"
+            import crypto_engine
+            sample_key = crypto_engine.generate_symmetric_key()
+            enc_bytes = crypto_engine.encrypt_aes_gcm(sample_payload, sample_key)
+            h1 = crypto_engine.sha256_bytes(enc_bytes[:len(enc_bytes)//3])
+            h2 = crypto_engine.sha256_bytes(enc_bytes[len(enc_bytes)//3: 2*len(enc_bytes)//3])
+            h3 = crypto_engine.sha256_bytes(enc_bytes[2*len(enc_bytes)//3:])
+            
+            sql_f = """
+            INSERT INTO do_files (doid, doname, enc_data, dkey, time, filekeyword, filename, data, block1, block2, block3, hash1, hash2, hash3, ori_block1, ori_block2, ori_block3, rdkey, reencrypt_data, encryptTime, tx_hash)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """ if db.is_mysql else """
+            INSERT INTO do_files (doid, doname, enc_data, dkey, time, filekeyword, filename, data, block1, block2, block3, hash1, hash2, hash3, ori_block1, ori_block2, ori_block3, rdkey, reencrypt_data, encryptTime, tx_hash)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """
+            c.execute(sql_f, ("1", "DataOwner", enc_bytes, sample_key, "2026/08/28 00:00:00", "cloud", "cloud_security_whitepaper.pdf", sample_payload, "block1_data", "block2_data", "block3_data", h1, h2, h3, "ori1", "ori2", "ori3", sample_key, enc_bytes, "12.5", "0x0000000000000000000000000000000000000000000000000000000000000000"))
+
+        db.commit()
+        db.close()
+    except Exception as ex_seed:
+        sys.stderr.write(f"[DB Seed Warning] {ex_seed}\n")
 
 
 init_db()
