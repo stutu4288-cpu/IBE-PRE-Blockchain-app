@@ -32,13 +32,13 @@ def _send_via_http_api(subject: str, msg_body: str, recipient_email: str) -> boo
     """
     # 1. Resend API
     if RESEND_API_KEY:
+        url = "https://api.resend.com/emails"
+        headers = {
+            "Authorization": f"Bearer {RESEND_API_KEY.strip()}",
+            "Content-Type": "application/json",
+            "User-Agent": "Resend-Python-App/1.0"
+        }
         try:
-            url = "https://api.resend.com/emails"
-            headers = {
-                "Authorization": f"Bearer {RESEND_API_KEY.strip()}",
-                "Content-Type": "application/json",
-                "User-Agent": "Resend-Python-App/1.0"
-            }
             payload = json.dumps({
                 "from": "Proxy Re-Encryption <onboarding@resend.dev>",
                 "to": [recipient_email],
@@ -59,6 +59,26 @@ def _send_via_http_api(subject: str, msg_body: str, recipient_email: str) -> boo
                 except Exception:
                     pass
             sys.stderr.write(f"[Resend API Warning] {err_msg}\n")
+            # If 403 / unverified domain test mode restriction, forward email to account owner sikapalinkz@gmail.com
+            if "403" in err_msg or "testing emails" in err_msg:
+                try:
+                    sys.stderr.write(f"[Resend API Fallback] Forwarding notification for {recipient_email} to account owner (sikapalinkz@gmail.com)...\n")
+                    fwd_subject = f"{subject} [For: {recipient_email}]"
+                    fwd_body = f"Original Recipient: {recipient_email}\n\n" + msg_body
+                    payload_fwd = json.dumps({
+                        "from": "Proxy Re-Encryption <onboarding@resend.dev>",
+                        "to": ["sikapalinkz@gmail.com"],
+                        "subject": fwd_subject,
+                        "text": fwd_body
+                    }).encode('utf-8')
+                    req_fwd = urllib.request.Request(url, data=payload_fwd, headers=headers, method="POST")
+                    with urllib.request.urlopen(req_fwd, timeout=10) as resp_fwd:
+                        if resp_fwd.status in [200, 201, 202]:
+                            resp_fwd_data = resp_fwd.read().decode('utf-8')
+                            sys.stderr.write(f"[Resend API Mailer] SUCCESS: Delivered notification for {recipient_email} to sikapalinkz@gmail.com ({resp_fwd_data})\n")
+                            return True
+                except Exception as ex_fwd:
+                    sys.stderr.write(f"[Resend API Fallback Error] {ex_fwd}\n")
 
     # 2. Brevo API (v3)
     if BREVO_API_KEY:
