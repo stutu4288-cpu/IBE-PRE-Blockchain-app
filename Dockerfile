@@ -13,9 +13,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY python_pre_app/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# Copy python application source code
+# Copy python application source code & catalina.sh wrapper
 COPY python_pre_app /app
 COPY schema.sql /app/schema.sql
+COPY catalina.sh /app/catalina.sh
+COPY catalina.sh /usr/local/bin/catalina.sh
+RUN chmod +x /app/catalina.sh /usr/local/bin/catalina.sh
 
 EXPOSE 8000
 

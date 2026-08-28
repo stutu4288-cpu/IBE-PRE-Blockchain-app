@@ -3,6 +3,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libffi-dev \
@@ -12,6 +13,8 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY . /app
+COPY catalina.sh /usr/local/bin/catalina.sh
+RUN chmod +x /app/catalina.sh /usr/local/bin/catalina.sh
 
 EXPOSE 8000
 
