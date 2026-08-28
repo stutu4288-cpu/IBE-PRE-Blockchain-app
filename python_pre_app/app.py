@@ -667,11 +667,16 @@ class WebAppHandler(BaseHTTPRequestHandler):
         err = query.get('error', [''])[0]
         msg = query.get('msg', [''])[0]
         
+        pkey_param = query.get('pkey', [''])[0]
         alert = ""
-        if msg == "pending_approval" or msg == "registered":
-            alert = '<div class="alert alert-info text-center py-2"><i class="icofont-clock-time"></i> <b>Registration Request Submitted!</b> Your account is currently <b>Pending Approval</b> by the Trusted Authority (TA). Once approved, you will receive your Private Key via email to log in below.</div>'
+        default_pkey = pkey_param if pkey_param else ""
+
+        if pkey_param:
+            alert = f'<div class="alert alert-success text-center py-2"><i class="icofont-check-circled"></i> <b>Account Approved by TA!</b><br>Your Cryptographic Private Key: <code class="bg-light px-2 py-1 border rounded text-dark font-weight-bold">{pkey_param}</code><br><small class="text-success font-weight-bold">✔ Key auto-filled below! Click "Sign In" to proceed.</small></div>'
+        elif msg == "pending_approval" or msg == "registered":
+            alert = '<div class="alert alert-info text-center py-2"><i class="icofont-clock-time"></i> <b>Registration Request Submitted!</b> Your account is currently <b>Pending Approval</b> by the Trusted Authority (TA). Once approved by TA, your Private Key will be issued.</div>'
         elif err == "pending":
-            alert = '<div class="alert alert-warning text-center py-2"><i class="icofont-clock-time"></i> <b>Account Pending Approval!</b> The Trusted Authority has not yet approved your account. Please wait for TA activation and your emailed Private Key.</div>'
+            alert = '<div class="alert alert-warning text-center py-2"><i class="icofont-clock-time"></i> <b>Account Pending Approval!</b> The Trusted Authority has not yet approved your account. Please wait for TA activation.</div>'
         elif err == "invalid":
             alert = '<div class="alert alert-danger text-center py-2"><i class="icofont-close-circled"></i> Invalid username/email/phone, password, or security key.</div>'
         elif err == "invalid_key":
@@ -681,7 +686,6 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
         default_identifier = ""
         default_pwd = ""
-        default_pkey = ""
 
         extra_fields = ""
         top_tabs = ""
@@ -2606,7 +2610,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
         if db_pkey:
             if not user_pkey or user_pkey.strip() != db_pkey:
                 self.log_audit(role, str(row['id']), identifier, "INVALID_KEY")
-                return self.redirect(f"/login?role={role_slug}&error=invalid_key")
+                encoded_pkey = urllib.parse.quote(db_pkey)
+                return self.redirect(f"/login?role={role_slug}&error=invalid_key&pkey={encoded_pkey}")
 
         sess_data = {
             "user_id": str(row['id']),
