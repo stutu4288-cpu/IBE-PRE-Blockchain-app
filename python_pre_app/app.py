@@ -766,6 +766,12 @@ class WebAppHandler(BaseHTTPRequestHandler):
     def show_register(self, query):
         role_param = query.get('role', ['owner'])[0].lower()
         active_role = "OWNER" if role_param == "owner" else "USER"
+        reg_images = {
+            "owner": "/assets/img/dologin.png",
+            "user": "/assets/img/dulogin.jpg"
+        }
+        img_src = reg_images.get(role_param, "/assets/img/dologin.png")
+
         err = query.get('error', [''])[0]
         alert = ""
         if err == "email_exists" or err == "exists":
@@ -773,7 +779,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
         elif err == "phone_exists":
             alert = '<div class="alert alert-warning text-center py-2"><i class="icofont-warning"></i> This Phone Number is already associated with another account. Please use a unique phone number.</div>'
         elif err == "invalid_phone":
-            alert = '<div class="alert alert-warning text-center py-2"><i class="icofont-warning"></i> Phone Number must be exactly 10 numeric digits! (e.g. 0557185634)</div>'
+            alert = '<div class="alert alert-warning text-center py-2"><i class="icofont-warning"></i> Phone Number must be 9 digits excluding leading 0! (e.g. 557185634)</div>'
         elif err == "empty":
             alert = '<div class="alert alert-warning text-center py-2"><i class="icofont-warning"></i> Please fill in all required registration fields!</div>'
         elif err == "error":
@@ -784,7 +790,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
             <div class="container" data-aos="fade-up">
                 <div class="row align-items-center">
                     <div class="col-lg-6 mb-4 mb-lg-0 text-center">
-                        <img src="/assets/img/register.png" class="img-fluid rounded shadow-sm w-100" style="max-height: 480px; object-fit: contain;" alt="Register" />
+                        <img src="{img_src}" class="img-fluid rounded shadow-sm w-100" style="max-height: 480px; object-fit: contain;" alt="Register" />
                     </div>
                     <div class="col-lg-6">
                         <div class="card p-4 shadow-sm border-0 bg-white">
