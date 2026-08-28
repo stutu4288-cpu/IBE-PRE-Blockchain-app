@@ -2543,9 +2543,10 @@ class WebAppHandler(BaseHTTPRequestHandler):
             return self.redirect(f"/login?role={role_slug}&error=pending")
 
         db_pkey = (row.get('private_key') or '').strip()
-        if user_pkey and db_pkey and user_pkey != db_pkey:
-            self.log_audit(role, str(row['id']), identifier, "INVALID_KEY")
-            return self.redirect(f"/login?role={role_slug}&error=invalid_key")
+        if db_pkey:
+            if not user_pkey or user_pkey.strip() != db_pkey:
+                self.log_audit(role, str(row['id']), identifier, "INVALID_KEY")
+                return self.redirect(f"/login?role={role_slug}&error=invalid_key")
 
         sess_data = {
             "user_id": str(row['id']),

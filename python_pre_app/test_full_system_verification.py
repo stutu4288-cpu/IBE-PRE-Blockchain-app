@@ -114,7 +114,7 @@ def run_full_system_verification():
     # -------------------------------------------------------------------------
     print("\n[REQ 3] Verifying 2-Step 3-Block Fragment Upload & Ethereum Smart Contract Logging...")
     do_client = create_client()
-    login_do = urllib.parse.urlencode({'email': 'v_owner@gmail.com', 'password': 'pass123', 'role': 'owner'}).encode('utf-8')
+    login_do = urllib.parse.urlencode({'email': 'v_owner@gmail.com', 'password': 'pass123', 'role': 'owner', 'private_key': do_rec['private_key']}).encode('utf-8')
     res_do_log = do_client.open(f"{BASE_URL}/login", login_do)
     assert res_do_log.status == 200
 
@@ -165,7 +165,7 @@ def run_full_system_verification():
     # -------------------------------------------------------------------------
     print("\n[REQ 4] Verifying Keyword Search, File Access Request & IBPRE Re-Key Derivation...")
     du_client = create_client()
-    login_du = urllib.parse.urlencode({'email': 'v_user@gmail.com', 'password': 'pass123', 'role': 'user'}).encode('utf-8')
+    login_du = urllib.parse.urlencode({'email': 'v_user@gmail.com', 'password': 'pass123', 'role': 'user', 'private_key': du_rec['private_key']}).encode('utf-8')
     res_du_log = du_client.open(f"{BASE_URL}/login", login_du)
     assert res_du_log.status == 200
 
