@@ -286,7 +286,38 @@ def init_db():
 
     db.commit()
     db.close()
+    import_schema_sql_if_empty()
     seed_db()
+
+
+def import_schema_sql_if_empty():
+    """Auto-executes schema.sql if tables do not exist in Railway MySQL."""
+    try:
+        db = get_connection()
+        if not db.is_mysql:
+            db.close()
+            return
+        c = db.cursor()
+        c.execute("SHOW TABLES")
+        tables = c.fetchall()
+        if not tables or len(tables) == 0:
+            schema_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "schema.sql")
+            if os.path.exists(schema_path):
+                sys.stderr.write(f"[DB Auto-Import] Importing initial schema from {schema_path} into Railway MySQL...\n")
+                with open(schema_path, "r", encoding="utf-8") as f_sql:
+                    sql_statements = f_sql.read().split(";")
+                    for stmt in sql_statements:
+                        stmt_clean = stmt.strip()
+                        if stmt_clean:
+                            try:
+                                c.execute(stmt_clean)
+                            except Exception as ex_st:
+                                pass
+                db.commit()
+                sys.stderr.write("[DB Auto-Import] SUCCESS: Initial schema & seed data imported into Railway MySQL!\n")
+        db.close()
+    except Exception as ex_imp:
+        sys.stderr.write(f"[DB Import Warning] {ex_imp}\n")
 
 
 def seed_db():
