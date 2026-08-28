@@ -772,6 +772,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
             alert = '<div class="alert alert-danger text-center py-2"><i class="icofont-close-circled"></i> This Email Address is already registered! Please login instead.</div>'
         elif err == "phone_exists":
             alert = '<div class="alert alert-warning text-center py-2"><i class="icofont-warning"></i> This Phone Number is already associated with another account. Please use a unique phone number.</div>'
+        elif err == "invalid_phone":
+            alert = '<div class="alert alert-warning text-center py-2"><i class="icofont-warning"></i> Phone Number must be exactly 10 numeric digits! (e.g. 0557185634)</div>'
         elif err == "empty":
             alert = '<div class="alert alert-warning text-center py-2"><i class="icofont-warning"></i> Please fill in all required registration fields!</div>'
         elif err == "error":
@@ -780,8 +782,11 @@ class WebAppHandler(BaseHTTPRequestHandler):
         content = f"""
         <section id="contact" class="contact py-4">
             <div class="container" data-aos="fade-up">
-                <div class="row justify-content-center">
-                    <div class="col-lg-8">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 mb-4 mb-lg-0 text-center">
+                        <img src="/assets/img/register.png" class="img-fluid rounded shadow-sm w-100" style="max-height: 480px; object-fit: contain;" alt="Register" />
+                    </div>
+                    <div class="col-lg-6">
                         <div class="card p-4 shadow-sm border-0 bg-white">
                             <ul class="nav nav-tabs nav-fill mb-4">
                                 <li class="nav-item">
@@ -808,12 +813,12 @@ class WebAppHandler(BaseHTTPRequestHandler):
                                     </div>
                                 </div>
                                 <div class="row">
-                    <div class="col-md-6 mb-3 form-group">
+                                    <div class="col-md-6 mb-3 form-group">
                                         <label class="font-weight-bold">Email Address :</label>
                                         <input type="email" class="form-control" name="email" id="email" placeholder="name@example.com" required>
                                     </div>
                                     <div class="col-md-6 mb-3 form-group">
-                                         <label class="font-weight-bold">Phone Number (International Country Setting) :</label>
+                                         <label class="font-weight-bold">Phone Number (10 Digits) :</label>
                                          <div class="input-group">
                                              <select name="country_code" id="country_code" class="form-control col-md-5 font-weight-bold bg-light" style="border-top-right-radius: 0; border-bottom-right-radius: 0;" onchange="updatePhonePreview();" required>
                                                  <option value="+233" selected>🇬🇭 +233 (GH)</option>
@@ -829,7 +834,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                                                  <option value="+81">🇯🇵 +81 (JP)</option>
                                                  <option value="+971">🇦🇪 +971 (AE)</option>
                                              </select>
-                                             <input type="tel" class="form-control col-md-7" name="phone" id="phone" placeholder="Digits without 0 (e.g. 557185634)" pattern="[0-9]{7,15}" title="7 to 15 numeric digits required" oninput="updatePhonePreview();" required>
+                                             <input type="tel" class="form-control col-md-7" name="phone" id="phone" placeholder="10 digits (e.g. 0557185634)" pattern="[0-9]{10}" title="Exactly 10 numeric digits required (e.g. 0557185634)" maxlength="10" oninput="updatePhonePreview();" required>
                                          </div>
                                          <small id="phonePreview" class="form-text font-weight-bold text-muted mt-1"></small>
                                      </div>
@@ -879,23 +884,19 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 var cc = document.getElementById("country_code").value;
                 var phInput = document.getElementById("phone");
                 var digits = phInput.value.replace(/[^0-9]/g, '');
-                if (digits.startsWith('0')) {{
-                    digits = digits.replace(/^0+/, '');
-                    phInput.value = digits;
-                }} else {{
-                    phInput.value = digits;
-                }}
+                phInput.value = digits;
                 var prev = document.getElementById("phonePreview");
                 if (!digits) {{
                     prev.innerText = "";
                     return;
                 }}
-                if (digits.length < 7 || digits.length > 15) {{
+                if (digits.length !== 10) {{
                     prev.style.color = "#dc3545";
-                    prev.innerText = "✖ Invalid length: " + digits.length + " digits (7-15 required)";
+                    prev.innerText = "✖ Phone number must be exactly 10 digits (currently " + digits.length + " digits)";
                 }} else {{
+                    var trimmed = digits.startsWith('0') ? digits.substring(1) : digits;
                     prev.style.color = "#198754";
-                    prev.innerText = "✔ Valid E.164 Number: " + cc + digits;
+                    prev.innerText = "✔ Valid 10-digit number: " + cc + trimmed;
                 }}
             }}
             function checkMatch() {{
@@ -920,9 +921,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
                 if (p1 !== p2) {{ alert("Passwords do not match!"); return false; }}
 
                 var phInput = document.getElementById("phone");
-                var digits = phInput.value.replace(/[^0-9]/g, '').replace(/^0+/, '');
-                if (digits.length < 7 || digits.length > 15) {{
-                    alert("Please enter a valid phone number (7 to 15 numeric digits required)!");
+                var digits = phInput.value.replace(/[^0-9]/g, '');
+                if (digits.length !== 10) {{
+                    alert("Phone number must be exactly 10 numeric digits! (e.g. 0557185634)");
                     phInput.focus();
                     return false;
                 }}
@@ -2620,13 +2621,14 @@ class WebAppHandler(BaseHTTPRequestHandler):
         gender = get_param_val(params, 'gender', 'Male')
         country_code = get_param_val(params, 'country_code', '+233')
         raw_phone_input = get_param_val(params, 'phone')
-        raw_digits = ''.join(c for c in raw_phone_input if c.isdigit()).lstrip('0')
+        raw_digits = ''.join(c for c in raw_phone_input if c.isdigit())
         role_slug = 'owner' if role == 'OWNER' else 'user'
 
-        if raw_digits and (len(raw_digits) < 7 or len(raw_digits) > 15):
+        if raw_digits and len(raw_digits) != 10:
             return self.redirect(f"/register?role={role_slug}&error=invalid_phone")
 
-        phone = f"{country_code}{raw_digits}" if raw_digits else ""
+        clean_digits = raw_digits.lstrip('0') if raw_digits.startswith('0') else raw_digits
+        phone = f"{country_code}{clean_digits}" if clean_digits else ""
         address = get_param_val(params, 'address')
 
         if not name or not email or not pwd:
