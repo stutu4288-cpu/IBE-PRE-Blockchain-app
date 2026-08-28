@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Python Mail Gateway — Replicates Java Networks.Mail module.
-Supports HTTPS API (Brevo / Resend / SendGrid) over Port 443 + Dual-Mode SMTP (465/587) with Background Async Threading.
+Supports Resend / Brevo / SendGrid HTTPS API over Port 443 + Dual-Mode SMTP (465/587) with Non-Blocking Async Threading.
 """
 
 import os
@@ -19,16 +19,47 @@ SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
 SMTP_USER = os.environ.get("SMTP_USER", "stubtechict@gmail.com")
 SMTP_PASS = os.environ.get("SMTP_PASS", "zgsi mnox gaue yyqv").replace(" ", "")
 
-# Cloud HTTP Email API Keys (Optional environment variables on Railway)
-BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
+# Environment Variable HTTP Email API Keys (Set on Railway / Cloud dashboard)
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
 SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
 
 def _send_via_http_api(subject: str, msg_body: str, recipient_email: str) -> bool:
     """
-    Delivers email over HTTPS (Port 443) to bypass cloud provider SMTP port blocks (Railway/Heroku/AWS).
+    Delivers email over HTTPS (Port 443) using Resend / Brevo / SendGrid APIs.
+    Bypasses cloud provider raw SMTP port blocks.
     """
-    # 1. Brevo API (v3)
+    # 1. Resend API
+    if RESEND_API_KEY:
+        try:
+            url = "https://api.resend.com/emails"
+            headers = {
+                "Authorization": f"Bearer {RESEND_API_KEY.strip()}",
+                "Content-Type": "application/json",
+                "User-Agent": "Resend-Python-App/1.0"
+            }
+            payload = json.dumps({
+                "from": "Proxy Re-Encryption <onboarding@resend.dev>",
+                "to": [recipient_email],
+                "subject": subject,
+                "text": msg_body
+            }).encode('utf-8')
+            req = urllib.request.Request(url, data=payload, headers=headers, method="POST")
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                if resp.status in [200, 201, 202]:
+                    resp_data = resp.read().decode('utf-8')
+                    sys.stderr.write(f"[Resend API Mailer] SUCCESS: Email delivered to {recipient_email} ({resp_data})\n")
+                    return True
+        except Exception as ex:
+            err_msg = str(ex)
+            if hasattr(ex, 'read'):
+                try:
+                    err_msg += " - " + ex.read().decode('utf-8')
+                except Exception:
+                    pass
+            sys.stderr.write(f"[Resend API Warning] {err_msg}\n")
+
+    # 2. Brevo API (v3)
     if BREVO_API_KEY:
         try:
             url = "https://api.brevo.com/v3/smtp/email"
@@ -50,28 +81,6 @@ def _send_via_http_api(subject: str, msg_body: str, recipient_email: str) -> boo
                     return True
         except Exception as ex:
             sys.stderr.write(f"[HTTP Mailer Warning] Brevo API error: {ex}\n")
-
-    # 2. Resend API
-    if RESEND_API_KEY:
-        try:
-            url = "https://api.resend.com/emails"
-            headers = {
-                "Authorization": f"Bearer {RESEND_API_KEY}",
-                "Content-Type": "application/json"
-            }
-            payload = json.dumps({
-                "from": "Proxy Re-Encryption <onboarding@resend.dev>",
-                "to": [recipient_email],
-                "subject": subject,
-                "text": msg_body
-            }).encode('utf-8')
-            req = urllib.request.Request(url, data=payload, headers=headers, method="POST")
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                if resp.status in [200, 201, 202]:
-                    sys.stderr.write(f"[HTTP Mailer] SUCCESS (Resend API): Delivered to {recipient_email}\n")
-                    return True
-        except Exception as ex:
-            sys.stderr.write(f"[HTTP Mailer Warning] Resend API error: {ex}\n")
 
     # 3. SendGrid API
     if SENDGRID_API_KEY:
@@ -116,7 +125,7 @@ def _deliver_email_worker(msg_body: str, name_or_subj: str, recipient_email: str
 
     sys.stderr.write(f"[SMTP Mailer] Dispatching email to {recipient_email} (Subject: {subject})...\n")
 
-    # Attempt 1: HTTPS API (bypasses all cloud port blocks)
+    # Attempt 1: HTTPS API (Resend / Brevo / SendGrid - bypasses all cloud port blocks)
     if _send_via_http_api(subject, msg_body, recipient_email):
         return
 

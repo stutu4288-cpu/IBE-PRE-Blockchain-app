@@ -4,3 +4,9 @@ nbproject/private/
 TestFTP.java
 TestFTP.class
 cookies.txt
+__pycache__/
+*.pyc
+python_pre_app/__pycache__/
+python_pre_app/*.pyc
+test_resend.py
+test_mail_ipv4.py
