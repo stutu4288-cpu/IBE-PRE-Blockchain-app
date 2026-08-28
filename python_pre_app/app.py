@@ -818,7 +818,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                                         <input type="email" class="form-control" name="email" id="email" placeholder="name@example.com" required>
                                     </div>
                                     <div class="col-md-6 mb-3 form-group">
-                                         <label class="font-weight-bold">Phone Number (10 Digits) :</label>
+                                         <label class="font-weight-bold">Phone Number (9 Digits without 0) :</label>
                                          <div class="input-group">
                                              <select name="country_code" id="country_code" class="form-control col-md-5 font-weight-bold bg-light" style="border-top-right-radius: 0; border-bottom-right-radius: 0;" onchange="updatePhonePreview();" required>
                                                  <option value="+233" selected>🇬🇭 +233 (GH)</option>
@@ -834,7 +834,7 @@ class WebAppHandler(BaseHTTPRequestHandler):
                                                  <option value="+81">🇯🇵 +81 (JP)</option>
                                                  <option value="+971">🇦🇪 +971 (AE)</option>
                                              </select>
-                                             <input type="tel" class="form-control col-md-7" name="phone" id="phone" placeholder="10 digits (e.g. 0557185634)" pattern="[0-9]{{10}}" title="Exactly 10 numeric digits required (e.g. 0557185634)" maxlength="10" oninput="updatePhonePreview();" required>
+                                             <input type="tel" class="form-control col-md-7" name="phone" id="phone" placeholder="9 digits (e.g. 557185634)" pattern="[0-9]{{9,10}}" title="9 digits without leading 0 (e.g. 557185634) or 10 digits starting with 0" maxlength="10" oninput="updatePhonePreview();" required>
                                          </div>
                                          <small id="phonePreview" class="form-text font-weight-bold text-muted mt-1"></small>
                                      </div>
@@ -890,13 +890,13 @@ class WebAppHandler(BaseHTTPRequestHandler):
                     prev.innerText = "";
                     return;
                 }}
-                if (digits.length !== 10) {{
+                var cleanDigits = digits.startsWith('0') ? digits.substring(1) : digits;
+                if (cleanDigits.length !== 9) {{
                     prev.style.color = "#dc3545";
-                    prev.innerText = "✖ Phone number must be exactly 10 digits (currently " + digits.length + " digits)";
+                    prev.innerText = "✖ Phone number must be 9 digits (excluding leading 0)";
                 }} else {{
-                    var trimmed = digits.startsWith('0') ? digits.substring(1) : digits;
                     prev.style.color = "#198754";
-                    prev.innerText = "✔ Valid 10-digit number: " + cc + trimmed;
+                    prev.innerText = "✔ Valid International Number: " + cc + cleanDigits;
                 }}
             }}
             function checkMatch() {{
@@ -922,8 +922,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
 
                 var phInput = document.getElementById("phone");
                 var digits = phInput.value.replace(/[^0-9]/g, '');
-                if (digits.length !== 10) {{
-                    alert("Phone number must be exactly 10 numeric digits! (e.g. 0557185634)");
+                var cleanDigits = digits.startsWith('0') ? digits.substring(1) : digits;
+                if (cleanDigits.length !== 9) {{
+                    alert("Phone number must be 9 digits excluding leading 0 (e.g. 557185634)!");
                     phInput.focus();
                     return false;
                 }}
@@ -2622,12 +2623,12 @@ class WebAppHandler(BaseHTTPRequestHandler):
         country_code = get_param_val(params, 'country_code', '+233')
         raw_phone_input = get_param_val(params, 'phone')
         raw_digits = ''.join(c for c in raw_phone_input if c.isdigit())
+        clean_digits = raw_digits.lstrip('0') if raw_digits.startswith('0') else raw_digits
         role_slug = 'owner' if role == 'OWNER' else 'user'
 
-        if raw_digits and len(raw_digits) != 10:
+        if raw_digits and len(clean_digits) != 9:
             return self.redirect(f"/register?role={role_slug}&error=invalid_phone")
 
-        clean_digits = raw_digits.lstrip('0') if raw_digits.startswith('0') else raw_digits
         phone = f"{country_code}{clean_digits}" if clean_digits else ""
         address = get_param_val(params, 'address')
 

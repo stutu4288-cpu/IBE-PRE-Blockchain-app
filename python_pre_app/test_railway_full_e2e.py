@@ -2,7 +2,7 @@
 Complete End-to-End Live Railway Deployment Verification Suite.
 Tests 100% of features live on Railway:
 1. Multi-Role Authentication for all 5 roles (TA, Owner, User, CSP, Proxy)
-2. Live User Registration (Data Owner & Data User with unique 10-digit phone numbers)
+2. Live User Registration (Data Owner & Data User with unique 9-digit phone numbers excluding leading 0)
 3. TA Approval Workflow & Cryptographic Private Key Extraction
 4. Approved Account Logins with Issued Base64 Private Keys
 5. 2-Step 3-Block Fragment Upload & Ethereum Ledger Hash Simulation
@@ -77,14 +77,14 @@ def run_railway_e2e_verification():
     print("   [OK] Proxy Server Active")
 
     # -------------------------------------------------------------------------
-    # TEST 2: Live Registration on Railway (With Unique 10-Digit Phone Numbers)
+    # TEST 2: Live Registration on Railway (With Unique 9-Digit Phone Numbers)
     # -------------------------------------------------------------------------
-    print("\n[TEST 2] Verifying User Registration (10-Digit Phone) on Railway...")
+    print("\n[TEST 2] Verifying User Registration (9-Digit Phone without 0) on Railway...")
     ts = int(time.time())
     new_do_email = f"rw_owner_{ts}@gmail.com"
     new_du_email = f"rw_user_{ts}@gmail.com"
-    new_do_phone = f"055{ts % 10000000:07d}"
-    new_du_phone = f"024{(ts + 5) % 10000000:07d}"
+    new_do_phone = f"55{ts % 10000007:07d}"
+    new_du_phone = f"24{(ts + 5) % 10000007:07d}"
     new_kw = f"rw_kw_{ts}"
 
     # Register Data Owner
@@ -101,7 +101,7 @@ def run_railway_e2e_verification():
     }).encode('utf-8')
     res_reg_do = client_home.open(f"{RAILWAY_URL}/register", reg_do_data)
     assert res_reg_do.status == 200 and "error=" not in res_reg_do.geturl(), f"Data Owner registration failed: {res_reg_do.geturl()}"
-    print(f"   [OK] Data Owner Account Submitted ({new_do_email}, Phone: {new_do_phone})")
+    print(f"   [OK] Data Owner Account Submitted ({new_do_email}, 9-digit Phone: {new_do_phone})")
 
     # Register Data User
     reg_du_data = urllib.parse.urlencode({
@@ -117,7 +117,7 @@ def run_railway_e2e_verification():
     }).encode('utf-8')
     res_reg_du = client_home.open(f"{RAILWAY_URL}/register", reg_du_data)
     assert res_reg_du.status == 200 and "error=" not in res_reg_du.geturl(), f"Data User registration failed: {res_reg_du.geturl()}"
-    print(f"   [OK] Data User Account Submitted ({new_du_email}, Phone: {new_du_phone})")
+    print(f"   [OK] Data User Account Submitted ({new_du_email}, 9-digit Phone: {new_du_phone})")
 
     # -------------------------------------------------------------------------
     # TEST 3: TA Approval & Cryptographic Private Key Generation
