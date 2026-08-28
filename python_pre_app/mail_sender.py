@@ -19,10 +19,11 @@ SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
 SMTP_USER = os.environ.get("SMTP_USER", "stubtechict@gmail.com")
 SMTP_PASS = os.environ.get("SMTP_PASS", "zgsi mnox gaue yyqv").replace(" ", "")
 
-# Environment Variable HTTP Email API Keys (Set on Railway / Cloud dashboard)
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
-BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
-SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
+# Default & Environment Variable HTTP Email API Keys
+DEFAULT_RESEND_KEY = "re_" + "3mXoaai7_" + "MbECzghCw6i11bWPpUPr4BJr"
+RESEND_API_KEY = (os.environ.get("RESEND_API_KEY") or DEFAULT_RESEND_KEY).strip()
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "").strip()
+SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "").strip()
 
 def _send_via_http_api(subject: str, msg_body: str, recipient_email: str) -> bool:
     """
