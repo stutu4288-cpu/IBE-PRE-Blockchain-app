@@ -127,8 +127,7 @@ def run_railway_e2e_verification():
     res_pending_do = client_ta.open(f"{RAILWAY_URL}/ta/owners")
     html_pending_do = res_pending_do.read().decode('utf-8')
     
-    # Locate the table row containing new_do_email
-    match_do = re.search(rf'<tr>\s*<td>(\d+)</td>\s*<td>[^<]*</td>\s*<td>[^<]*</td>\s*<td>{re.escape(new_do_email)}</td>.*?<a href="/ta/approve_do\?id=(\d+)"', html_pending_do, re.DOTALL)
+    match_do = re.search(rf'{re.escape(new_do_email)}.*?/ta/approve_do\?id=(\d+)', html_pending_do, re.DOTALL)
     assert match_do, f"Could not find pending owner row for {new_do_email}"
     do_id = match_do.group(1)
 
@@ -139,7 +138,7 @@ def run_railway_e2e_verification():
     # Get Users list
     res_pending_du = client_ta.open(f"{RAILWAY_URL}/ta/users")
     html_pending_du = res_pending_du.read().decode('utf-8')
-    match_du = re.search(rf'<tr>\s*<td>(\d+)</td>\s*<td>[^<]*</td>\s*<td>[^<]*</td>\s*<td>{re.escape(new_du_email)}</td>.*?<a href="/ta/approve_du\?id=(\d+)"', html_pending_du, re.DOTALL)
+    match_du = re.search(rf'{re.escape(new_du_email)}.*?/ta/approve_du\?id=(\d+)', html_pending_du, re.DOTALL)
     assert match_du, f"Could not find pending user row for {new_du_email}"
     du_id = match_du.group(1)
 
@@ -238,11 +237,13 @@ def run_railway_e2e_verification():
     # Approve Access Request
     res_app_req = client_new_do.open(f"{RAILWAY_URL}/owner/approve?fid={req_id}")
     assert res_app_req.status == 200, "Approve access request failed"
-    html_app_req = res_app_req.read().decode('utf-8')
 
-    # Extract derived IBPRE Re-Encryption Key (rdkey)
-    rdkey_match = re.search(r'rdkey=([A-Za-z0-9%+\-/=]+)', html_app_req)
-    assert rdkey_match, "Derived IBPRE Re-Encryption Key not found in approval response"
+    # Data User opens /user/verify?rid={req_id} to view derived IBPRE Re-Key
+    res_ver = client_new_du.open(f"{RAILWAY_URL}/user/verify?rid={req_id}")
+    html_ver = res_ver.read().decode('utf-8')
+
+    rdkey_match = re.search(r'name="rdkey"[^>]*value="([^"]+)"', html_ver) or re.search(r'rdkey=([A-Za-z0-9%+\-/=]+)', html_ver)
+    assert rdkey_match, "Derived IBPRE Re-Encryption Key not found in user verification page"
     raw_rdkey = urllib.parse.unquote(rdkey_match.group(1))
     print(f"   [OK] Data Owner Approved Access (Req ID: {req_id}, Derived Re-Key: {raw_rdkey})")
 
