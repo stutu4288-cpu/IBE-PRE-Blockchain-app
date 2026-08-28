@@ -1,4 +1,4 @@
-﻿<%-- 
+<%-- 
     Document   : access_grant
     Created on : sept 30 , 2020, 5:14:44 AM
     Author     : Lenovo
@@ -32,16 +32,16 @@
         java.text.SimpleDateFormat sdfGrant = new java.text.SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         String grantedTime = sdfGrant.format(new java.util.Date());
 
-        int i = sto.executeUpdate("update request set status='Approved', granted_time='" + grantedTime + "' where fid='" + fid + "' ");
+        int i = sto.executeUpdate("update request set status='Approved', granted_time='" + grantedTime + "' where fid='" + fid + "' AND umail='" + mail + "' ");
         if (i != 0) {
-            ResultSet rs = st.executeQuery(" SELECT r.filename, r.rdkey FROM request r WHERE r.fid = '" + fid + "' ");
+            ResultSet rs = st.executeQuery(" SELECT r.filename, r.rdkey FROM request r WHERE r.fid = '" + fid + "' AND r.umail = '" + mail + "' ");
             if (rs.next()) {
                 String fname = rs.getString("filename");
                 String rdkey = rs.getString("rdkey");
                 
                 // Ethereum Blockchain Grant Access Logging via Ganache
                 String txHash = Networks.EthereumBridge.grantAccessOnChain(fid, mail, rdkey);
-                sto.executeUpdate("update request set tx_hash='" + txHash + "' where fid='" + fid + "' ");
+                sto.executeUpdate("update request set tx_hash='" + txHash + "' where fid='" + fid + "' AND umail='" + mail + "' ");
 
                 String msggg = "Filename : " + fname + "\nRe-Decryption key: " + rdkey + "\nEthereum TxHash: " + txHash + "\nGranted Time: " + grantedTime;
                 Mail ma = new Mail();

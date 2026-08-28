@@ -86,7 +86,7 @@
                     <ul>
                         <li><a href="duHome.jsp">Home</a></li>
                         <li><a href="searchFile.jsp">Search File</a></li>
-                        <li><a style="color:#eb5d1e" href="downloadFiles.jsp">Download Files</a></li>
+                        <li><a style="color:#eb5d1e" href="downloadFiles.jsp">My Requests & Downloads</a></li>
                         <li><a href="index.jsp">Logout</a></li>
                     </ul>
                 </nav><!-- .nav-menu -->
@@ -102,17 +102,17 @@
                     <div class="row">
                         <div class="col-lg-12 pt-4 pt-lg-0 order-2 order-lg-1 content" data-aos="fade-right" data-aos-delay="100">
                             <center>
-                                <h3>Download Requested Files</h3>
+                                <h3>My Requested Files & Approval Status</h3>
                                 <p class="text-muted" style="font-size: 15px; margin-bottom: 20px;">
                                     <i class="icofont-info-circle" style="color: #eb5d1e;"></i> 
-                                    View approved download requests, copy your Re-Encryption Key (rdkey), and verify Ethereum transaction hashes.
+                                    Track status of all your access requests. Once approved by the Data Owner, use your Re-Encryption key to decrypt and download files.
                                 </p>
                             </center><br>
                             <table id="customers">
                                 <tr>
-                                    <th>File ID</th>
+                                    <th>Req ID</th>
                                     <th>File Name</th>
-                                    <th>Requested Time</th>
+                                    <th>Requested Date</th>
                                     <th>Status</th>
                                     <th>Re-Encryption Key</th>
                                     <th>Ethereum TxHash</th>
@@ -121,52 +121,62 @@
                                 <%
                                     String uid = (String) session.getAttribute("duid");
                                     Connection con = SQLconnection.getconnection();
+                                    boolean hasRequests = false;
                                     if (con != null && uid != null) {
                                         try {
                                             PreparedStatement ps = con.prepareStatement("SELECT * FROM request WHERE uid=? ORDER BY id DESC");
                                             ps.setString(1, uid);
                                             ResultSet rs = ps.executeQuery();
                                             while (rs.next()) {
+                                                hasRequests = true;
                                                 String status = rs.getString("status");
+                                                String dostatus = rs.getString("dostatus");
                                                 String rdkey = rs.getString("rdkey");
                                                 String txHash = rs.getString("tx_hash");
+                                                boolean isApproved = "Approved".equalsIgnoreCase(status) || "Approved".equalsIgnoreCase(dostatus);
+                                                boolean isRejected = "Rejected".equalsIgnoreCase(status) || "Rejected".equalsIgnoreCase(dostatus);
                                 %>
                                 <tr>
                                     <td><%=rs.getString("id")%></td>
-                                    <td><%=rs.getString("filename")%></td>
+                                    <td><b><%=rs.getString("filename")%></b></td>
                                     <td><%=rs.getString("time")%></td>
                                     <td>
-                                        <% if("Approved".equalsIgnoreCase(status)) { %>
-                                            <span class="badge badge-success" style="font-size:14px; padding:6px 10px;">Approved</span>
-                                        <% } else if("Rejected".equalsIgnoreCase(status)) { %>
-                                            <span class="badge badge-danger" style="font-size:14px; padding:6px 10px;">Rejected</span>
+                                        <% if(isApproved) { %>
+                                            <span class="badge badge-success" style="font-size:14px; padding:6px 10px;"><i class="icofont-check-circled"></i> Approved</span>
+                                        <% } else if(isRejected) { %>
+                                            <span class="badge badge-danger" style="font-size:14px; padding:6px 10px;"><i class="icofont-close-circled"></i> Rejected</span>
                                         <% } else { %>
-                                            <span class="badge badge-warning" style="font-size:14px; padding:6px 10px;">Waiting Approval</span>
+                                            <span class="badge badge-warning" style="font-size:14px; padding:6px 10px;"><i class="icofont-clock-time"></i> Pending</span>
                                         <% } %>
                                     </td>
                                     <td>
-                                        <% if("Approved".equalsIgnoreCase(status) && rdkey != null && !rdkey.isEmpty()) { %>
-                                            <code style="font-size:15px; font-weight:bold; color:#0d6efd; background:#e7f1ff; padding:4px 8px; border-radius:4px;"><%=rdkey%></code>
+                                        <% if(isApproved && rdkey != null && !rdkey.isEmpty() && !"waiting".equalsIgnoreCase(rdkey)) { %>
+                                            <code style="font-size:14px; font-weight:bold; color:#0d6efd; background:#e7f1ff; padding:4px 8px; border-radius:4px; word-break:break-all;"><%=rdkey%></code>
                                         <% } else { %>
-                                            <span style="color:#888;">N/A</span>
+                                            <span class="text-muted"><i class="icofont-lock"></i> Hidden until Approved</span>
                                         <% } %>
                                     </td>
                                     <td>
-                                        <% if(txHash != null && !txHash.isEmpty()) { %>
-                                            <code style="font-size:13px; font-weight:bold; color:#198754; background:#e8f5e9; padding:4px 6px; border-radius:4px;"><%=txHash%></code>
+                                        <% if(txHash != null && !txHash.isEmpty() && !txHash.equalsIgnoreCase("null")) { %>
+                                            <code style="font-size:13px; font-weight:bold; color:#198754; background:#e8f5e9; padding:4px 6px; border-radius:4px; word-break:break-all;"><%=txHash%></code>
                                         <% } else { %>
-                                            <span style="color:#888;">N/A</span>
+                                            <span class="text-muted">N/A</span>
                                         <% } %>
                                     </td>
                                     <td>
-                                        <% if("Approved".equalsIgnoreCase(status)) { %>
-                                            <a href="verify.jsp?rid=<%=rs.getString("id")%>" class="btn btn-success btn-md">Download File</a>
+                                        <% if(isApproved) { %>
+                                            <a href="verify.jsp?rid=<%=rs.getString("id")%>" class="btn btn-success btn-sm font-weight-bold"><i class="icofont-download"></i> Download File</a>
+                                        <% } else if(isRejected) { %>
+                                            <button disabled class="btn btn-danger btn-sm font-weight-bold" style="opacity:0.75; cursor:not-allowed;"><i class="icofont-close"></i> Denied</button>
                                         <% } else { %>
-                                            <button disabled class="btn btn-secondary btn-md">Pending</button>
+                                            <button disabled class="btn btn-secondary btn-sm" style="opacity:0.75; cursor:not-allowed;"><i class="icofont-clock-time"></i> Pending Approval</button>
                                         <% } %>
                                     </td>
                                 </tr>
                                 <%          }
+                                            if (!hasRequests) {
+                                                out.println("<tr><td colspan='7' class='text-center text-muted py-4' style='font-size:16px;'><i class='icofont-info-circle' style='color:#eb5d1e;'></i> You have not submitted any file access requests yet. <a href='searchFile.jsp' class='btn btn-primary btn-sm ml-2'>Search & Request Files</a></td></tr>");
+                                            }
                                         } catch (Exception ex) {
                                             ex.printStackTrace();
                                         }

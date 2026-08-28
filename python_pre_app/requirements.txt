@@ -1,0 +1,18 @@
+# ===============================================================================
+# Python Dependencies for Proxy Re-Encryption (PRE) Cloud Data Sharing Platform
+# ===============================================================================
+
+# 1. Cryptography Engine (AES-256-GCM, Key Derivation, Secure Randomness)
+cryptography>=41.0.0
+
+# 2. Database Connectivity (MySQL Driver with Dictionary Cursor Support)
+pymysql>=1.1.0
+
+# 3. Document & Image Processing (File Structure Verification)
+pypdf>=3.0.0
+python-docx>=0.8.11
+Pillow>=9.0.0
+
+# Optional Extras:
+# mysql-connector-python>=8.0.0  # Alternative MySQL connector
+# web3>=6.0.0                    # Optional Ethereum Web3 SDK

@@ -29,18 +29,32 @@
 %>
 <%
 
-    String filepath = "D:/";
-    File testDir = new File(filepath);
-    if (!testDir.exists() || !testDir.canWrite()) {
+    String filepath = System.getProperty("java.io.tmpdir");
+    if (filepath == null || filepath.isEmpty()) {
         filepath = "C:/xampp/tomcat/temp/";
+    }
+    File testDir = new File(filepath);
+    if (!testDir.exists()) {
+        testDir.mkdirs();
     }
     String f1, f2, f3;
 
     try {
-        MultipartRequest m = new MultipartRequest(request, filepath);
+        MultipartRequest m = new MultipartRequest(request, filepath, 100 * 1024 * 1024);
         String filekeyword = m.getParameter("keyword");
         File file = m.getFile("fileToUpload");
-        String filename = file.getName().toLowerCase();
+        if (file == null) {
+            java.util.Enumeration files = m.getFileNames();
+            if (files != null && files.hasMoreElements()) {
+                String fNameKey = (String) files.nextElement();
+                file = m.getFile(fNameKey);
+            }
+        }
+        if (file == null || !file.exists()) {
+            response.sendRedirect("uploadFile.jsp?msg=Upload_File_Not_Found");
+            return;
+        }
+        String filename = file.getName();
         session.setAttribute("filename", filename);
         session.setAttribute("filepath", filepath);
 
@@ -54,90 +68,60 @@
             return;
         }
 
-        BufferedReader br = new BufferedReader(new FileReader(new File(filepath, filename)));
-        StringBuffer sb = new StringBuffer();
-        String temp;
+        byte[] fileBytes = java.nio.file.Files.readAllBytes(file.toPath());
+        String origHash = CryptoUtils.sha256(fileBytes);
+        session.setAttribute("origHash", origHash);
+        session.setAttribute("fileBytes", fileBytes);
 
-        while ((temp = br.readLine()) != null) {
-            sb.append(temp);
-            sb.append("\n");
-        }
+        String rawBase64Content = Base64.getEncoder().encodeToString(fileBytes);
+        session.setAttribute("filecontent", rawBase64Content);
 
-        session.setAttribute("filecontent", sb.toString());
         KeyGenerator Attrib_key = KeyGenerator.getInstance("AES");
         Attrib_key.init(128);
         SecretKey secretKey = Attrib_key.generateKey();
         session.setAttribute("secretKey", secretKey);
 
+        long aTime = System.currentTimeMillis();
         Encryption e = new Encryption();
-        String encryptedtext = e.encrypt(sb.toString(), secretKey);
+        byte[] encBytes = e.encryptGCM(fileBytes, secretKey);
+        String encryptedtext = Base64.getEncoder().encodeToString(encBytes);
+        session.setAttribute("cipherBytes", encBytes);
         session.setAttribute("EncryptText", encryptedtext);
+
         byte[] b = secretKey.getEncoded();
         String Dkey = Base64.getEncoder().encodeToString(b);
         session.setAttribute("Dkey", Dkey);
-
-        BufferedReader brd = new BufferedReader(new FileReader(new File(filepath, filename)));
-        StringBuffer sbd = new StringBuffer();
-        String tmp = null;
-
-        while ((tmp = brd.readLine()) != null) {
-            sbd.append(tmp + "\n");
-        }
 
         KeyGenerator Attrib_key1 = KeyGenerator.getInstance("AES");
         Attrib_key1.init(128);
         SecretKey secretKey1 = Attrib_key1.generateKey();
 
-        long aTime = new java.util.Date().getTime();
         Encryption e1 = new Encryption();
-        String encryptedtxt1 = e1.encrypt(sbd.toString(), secretKey1);
+        byte[] encBytes1 = e1.encryptGCM(fileBytes, secretKey1);
+        String encryptedtxt1 = Base64.getEncoder().encodeToString(encBytes1);
         session.setAttribute("EncryptText1", encryptedtxt1);
-        long bTime = new java.util.Date().getTime();
+        long bTime = System.currentTimeMillis();
         float encryptTime = (float)(bTime - aTime);
         session.setAttribute("encryptTime", encryptTime);
 
         byte[] b1 = secretKey1.getEncoded();
         String RDkey = Base64.getEncoder().encodeToString(b1);
         session.setAttribute("RDkey", RDkey);
-        session.setAttribute("RDkey", RDkey);
 
-        SplitFile splitFile = new SplitFile();
-        splitFile.split(filepath + filename);
-        f1 = filepath + filename + "1";
-        f2 = filepath + filename + "2";
-        f3 = filepath + filename + "3";
+        // Split ciphertext string into 3 equal blocks for distributed verification
+        int totalLen = encryptedtext.length();
+        int partLen = totalLen / 3;
+        String b1Str = encryptedtext.substring(0, partLen);
+        String b2Str = encryptedtext.substring(partLen, partLen * 2);
+        String b3Str = encryptedtext.substring(partLen * 2);
 
-        BufferedReader br1 = new BufferedReader(new FileReader(f1));
-        BufferedReader br2 = new BufferedReader(new FileReader(f2));
-        BufferedReader br3 = new BufferedReader(new FileReader(f3));
+        session.setAttribute("ori_block1", b1Str);
+        session.setAttribute("ori_block2", b2Str);
+        session.setAttribute("ori_block3", b3Str);
 
-        StringBuffer sb1 = new StringBuffer();
-        StringBuffer sb2 = new StringBuffer();
-        StringBuffer sb3 = new StringBuffer();
-        String temp1 = null;
-        String temp2 = null;
-        String temp3 = null;
-
-        while ((temp1 = br1.readLine()) != null) {
-            sb1.append(temp1);
-            sb1.append("\n");
-        }
-        while ((temp2 = br2.readLine()) != null) {
-            sb2.append(temp2);
-            sb2.append("\n");
-        }
-        while ((temp3 = br3.readLine()) != null) {
-            sb3.append(temp3);
-            sb3.append("\n");
-        }
-
-        session.setAttribute("ori_block1", sb1.toString());
-        session.setAttribute("ori_block2", sb2.toString());
-        session.setAttribute("ori_block3", sb3.toString());
-
-        String encryptedtext1 = e.encrypt(sb1.toString(), secretKey);
-        String encryptedtext2 = e.encrypt(sb2.toString(), secretKey);
-        String encryptedtext3 = e.encrypt(sb3.toString(), secretKey);
+        String encryptedtext1 = e.encrypt(b1Str, secretKey);
+        String encryptedtext2 = e.encrypt(b2Str, secretKey);
+        String encryptedtext3 = e.encrypt(b3Str, secretKey);
 
 %>
 <!DOCTYPE html>

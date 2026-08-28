@@ -63,8 +63,8 @@
                     <ul>
                         <li><a style="color:#eb5d1e" href="duHome.jsp">Home</a></li>
                         <li><a href="searchFile.jsp">Search File</a></li>
-                        <li><a href="downloadFiles.jsp">Download Files</a></li>
-                        <li><a href="logout.jsp">Logout</a></li>
+                        <li><a href="downloadFiles.jsp">My Requests & Downloads</a></li>
+                        <li><a href="index.jsp">Logout</a></li>
                     </ul>
                 </nav><!-- .nav-menu -->
 
@@ -95,9 +95,9 @@
                                     <a href="searchFile.jsp" class="btn btn-primary btn-sm px-4">Search Files</a>
                                 </div>
                                 <div class="col-md-5 m-2 p-3 bg-light rounded border text-center shadow-sm">
-                                    <h5 style="color:#eb5d1e;">Download Files</h5>
-                                    <p class="text-muted small mb-2">Access & decrypt approved files with your key</p>
-                                    <a href="downloadFiles.jsp" class="btn btn-primary btn-sm px-4">Download Files</a>
+                                    <h5 style="color:#eb5d1e;">My Requests & Downloads</h5>
+                                    <p class="text-muted small mb-2">Track request statuses & download approved files</p>
+                                    <a href="downloadFiles.jsp" class="btn btn-primary btn-sm px-4">My Requests & Downloads</a>
                                 </div>
                             </div>
 

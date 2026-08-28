@@ -45,20 +45,35 @@ static Connection con;
             if (pass == null || pass.isEmpty()) pass = System.getenv("MYSQL_PASSWORD");
 
             if (host != null && !host.isEmpty() && user != null && !user.isEmpty()) {
-                String cloudUrl = "jdbc:mysql://" + host + ":" + port + "/" + db + "?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true";
+                String cloudUrl = "jdbc:mysql://" + host + ":" + port + "/" + db + "?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true&maxAllowedPacket=67108864";
                 try {
                     con = DriverManager.getConnection(cloudUrl, user, pass != null ? pass : "");
-                    if (con != null) return con;
                 } catch (Exception exCloud) {
                     System.err.println("Cloud DB connection failed, attempting local fallback: " + exCloud.getMessage());
                 }
             }
 
             // 2. Local Fallback (XAMPP / Local MySQL)
-            try {
-                con = DriverManager.getConnection("jdbc:mysql://localhost:3306/prea", "root", "");
-            } catch (Exception e1) {
-                con = DriverManager.getConnection("jdbc:mysql://localhost:3306/prea", "root", "root");
+            if (con == null) {
+                String localParams = "?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true&maxAllowedPacket=67108864";
+                try {
+                    con = DriverManager.getConnection("jdbc:mysql://localhost:3306/prea" + localParams, "root", "");
+                } catch (Exception e1) {
+                    try {
+                        con = DriverManager.getConnection("jdbc:mysql://localhost:3306/prea" + localParams, "root", "root");
+                    } catch (Exception e2) {
+                        con = DriverManager.getConnection("jdbc:mysql://localhost:3306/prea", "root", "");
+                    }
+                }
+            }
+
+            // Auto-elevate max_allowed_packet to 64MB at runtime
+            if (con != null) {
+                try {
+                    con.createStatement().execute("SET GLOBAL max_allowed_packet=67108864");
+                } catch (Exception exPacket) {
+                    // Suppress if non-admin user
+                }
             }
         } catch (Exception e) {
             System.err.println("SQLconnection Error: " + e.getMessage());

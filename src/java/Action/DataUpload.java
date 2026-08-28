@@ -29,7 +29,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.SQLException;
 import java.security.MessageDigest;
-
+import java.util.Base64;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,13 +76,16 @@ public class DataUpload extends HttpServlet {
             String ori_block2 = user.getAttribute("ori_block2") != null ? user.getAttribute("ori_block2").toString() : "";
             String ori_block3 = user.getAttribute("ori_block3") != null ? user.getAttribute("ori_block3").toString() : "";
 
-            String uploadDir = "C:/xampp/tomcat/temp/";
+            String uploadDir = System.getProperty("java.io.tmpdir");
+            if (uploadDir == null || uploadDir.isEmpty()) {
+                uploadDir = "C:/xampp/tomcat/temp/";
+            }
             File tempDir = new File(uploadDir);
             if (!tempDir.exists()) {
                 tempDir.mkdirs();
             }
 
-            MultipartRequest m = new MultipartRequest(request, uploadDir);
+            MultipartRequest m = new MultipartRequest(request, uploadDir, 100 * 1024 * 1024);
             String keyword = m.getParameter("keyword");
             String paramDoid = m.getParameter("doid");
             String paramDoname = m.getParameter("doname");
@@ -133,10 +136,30 @@ public class DataUpload extends HttpServlet {
                 }
             }
 
-            // SHA-256 cryptographic block integrity hashes (replaces non-crypto hashCode)
-            String hash1 = sha256(block1 != null ? block1.getBytes("UTF-8") : new byte[0]);
-            String hash2 = sha256(block2 != null ? block2.getBytes("UTF-8") : new byte[0]);
-            String hash3 = sha256(block3 != null ? block3.getBytes("UTF-8") : new byte[0]);
+            byte[] fileBytes = (byte[]) user.getAttribute("fileBytes");
+            if (fileBytes == null && !filecontent.isEmpty()) {
+                try {
+                    fileBytes = Base64.getDecoder().decode(filecontent.replaceAll("\\s+", ""));
+                } catch (Exception exB64) {
+                    fileBytes = new byte[0];
+                }
+            }
+            if (fileBytes == null) fileBytes = new byte[0];
+
+            byte[] cipherBytes = (byte[]) user.getAttribute("cipherBytes");
+            if (cipherBytes == null && !encryptedtext.isEmpty()) {
+                try {
+                    cipherBytes = Base64.getDecoder().decode(encryptedtext.replaceAll("\\s+", ""));
+                } catch (Exception exB64) {
+                    cipherBytes = new byte[0];
+                }
+            }
+            if (cipherBytes == null) cipherBytes = new byte[0];
+
+            // SHA-256 cryptographic block integrity hashes
+            String hash1 = CryptoUtils.sha256(block1 != null ? block1.getBytes("UTF-8") : new byte[0]);
+            String hash2 = CryptoUtils.sha256(block2 != null ? block2.getBytes("UTF-8") : new byte[0]);
+            String hash3 = CryptoUtils.sha256(block3 != null ? block3.getBytes("UTF-8") : new byte[0]);
 
             // Ethereum Blockchain Smart Contract Logging via Ganache
             String txHash = Networks.EthereumBridge.logUploadOnChain(doid, fname, doname, hash1, hash2, hash3);
@@ -153,12 +176,12 @@ public class DataUpload extends HttpServlet {
                     pstm = con.prepareStatement(query);
                     pstm.setString(1, doid);
                     pstm.setString(2, doname);
-                    pstm.setString(3, encryptedtext);
+                    pstm.setBinaryStream(3, new java.io.ByteArrayInputStream(cipherBytes), cipherBytes.length);
                     pstm.setString(4, Dkey);
                     pstm.setString(5, time);
                     pstm.setString(6, keyword);
                     pstm.setString(7, fname);
-                    pstm.setString(8, filecontent);
+                    pstm.setBinaryStream(8, new java.io.ByteArrayInputStream(fileBytes), fileBytes.length);
                     pstm.setString(9, block1);
                     pstm.setString(10, block2);
                     pstm.setString(11, block3);

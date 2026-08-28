@@ -44,6 +44,23 @@
         <servlet-name>DUsignup</servlet-name>
         <url-pattern>/duReg</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>Download</servlet-name>
+        <servlet-class>Action.Download</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Download</servlet-name>
+        <url-pattern>/download</url-pattern>
+        <url-pattern>/Download</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>Upload</servlet-name>
+        <servlet-class>Action.Upload</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Upload</servlet-name>
+        <url-pattern>/Upload</url-pattern>
+    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>DataUpload</servlet-name>
         <url-pattern>/DataUpload</url-pattern>

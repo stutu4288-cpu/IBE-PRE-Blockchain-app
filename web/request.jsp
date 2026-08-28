@@ -26,6 +26,16 @@
     Connection con = SQLconnection.getconnection();
     if (con != null) {
         try {
+            // Check if request already exists for this user and file
+            PreparedStatement psChk = con.prepareStatement("SELECT id FROM request WHERE uid=? AND fid=?");
+            psChk.setString(1, uid);
+            psChk.setString(2, fid.trim());
+            ResultSet rsChk = psChk.executeQuery();
+            if (rsChk.next()) {
+                response.sendRedirect("searchAction.jsp?Already_Requested=true");
+                return;
+            }
+
             // 1. Fetch requesting Data User's identity private key
             String userPKey = "DEFAULT_KEY";
             PreparedStatement psUser = con.prepareStatement("SELECT private_key FROM du_reg WHERE id=?");
@@ -53,32 +63,34 @@
 
                 // 4. Insert request record with user-specific rdkey using PreparedStatement
                 PreparedStatement psIns = con.prepareStatement(
-                    "INSERT INTO request(filename, time, uid, uname, status, fid, doid, umail, dkey, rdkey, dostatus) VALUES(?, ?, ?, ?, 'waiting', ?, ?, ?, ?, ?, 'waiting')");
+                    "INSERT INTO request(filename, time, uid, uname, status, fid, doid, umail, dkey, rdkey, dostatus) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 psIns.setString(1, fname);
                 psIns.setString(2, time);
                 psIns.setString(3, uid);
                 psIns.setString(4, uname);
-                psIns.setString(5, fid.trim());
-                psIns.setString(6, doid);
-                psIns.setString(7, umail);
-                psIns.setString(8, dkey);
-                psIns.setString(9, userRdkey);
+                psIns.setString(5, "waiting");
+                psIns.setString(6, fid.trim());
+                psIns.setString(7, doid);
+                psIns.setString(8, umail);
+                psIns.setString(9, dkey);
+                psIns.setString(10, userRdkey);
+                psIns.setString(11, "waiting");
 
                 int i = psIns.executeUpdate();
                 if (i != 0) {
-                    response.sendRedirect("searchFile.jsp?Requestsent");
+                    response.sendRedirect("searchAction.jsp?Requestsent=true");
                 } else {
-                    response.sendRedirect("searchFile.jsp?failed");
+                    response.sendRedirect("searchAction.jsp?failed=true");
                 }
             } else {
-                response.sendRedirect("searchFile.jsp?failed");
+                response.sendRedirect("searchAction.jsp?failed=true");
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            response.sendRedirect("searchFile.jsp?failed");
+            response.sendRedirect("searchAction.jsp?failed=true");
         }
     } else {
-        response.sendRedirect("searchFile.jsp?DB_Error");
+        response.sendRedirect("searchAction.jsp?DB_Error=true");
     }
 %>
 

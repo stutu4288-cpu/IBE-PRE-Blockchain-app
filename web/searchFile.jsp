@@ -57,7 +57,7 @@
                     <ul>
                         <li><a href="duHome.jsp">Home</a></li>
                         <li><a style="color:#eb5d1e" href="searchFile.jsp">Search File</a></li>
-                        <li><a href="downloadFiles.jsp">Download Files</a></li>
+                        <li><a href="downloadFiles.jsp">My Requests & Downloads</a></li>
                         <li><a href="index.jsp">Logout</a></li>
                     </ul>
                 </nav><!-- .nav-menu -->

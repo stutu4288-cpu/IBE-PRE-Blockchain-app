@@ -1,4 +1,4 @@
-﻿<%-- 
+<%-- 
     Document   : index
     Created on : 26 Aug, 2024, 4:51:26 PM
     Author     : JAVA-JP
@@ -44,17 +44,17 @@
     <script type="text/javascript">
         function loadFile(o)
         {
-            var fr = new FileReader();
-            fr.onload = function (e)
-            {
-                showDataFile(e, o);
-            };
-            fr.readAsText(o.files[0]);
-        }
-
-        function showDataFile(e, o)
-        {
-            document.getElementById("data").innerText = e.target.result;
+            if (!o.files || !o.files[0]) return;
+            var f = o.files[0];
+            if (f.type.startsWith("text/") || f.name.endsWith(".txt") || f.name.endsWith(".json") || f.name.endsWith(".csv") || f.name.endsWith(".xml")) {
+                var fr = new FileReader();
+                fr.onload = function (e) {
+                    document.getElementById("data").innerText = e.target.result;
+                };
+                fr.readAsText(f);
+            } else {
+                document.getElementById("data").innerText = "Binary / Media File Loaded:\n" + f.name + "\nSize: " + (f.size / 1024).toFixed(2) + " KB\nType: " + (f.type || "Binary document/media");
+            }
         }
     </script>
     <body>
@@ -86,7 +86,7 @@
                     <center>
                         <h3>Upload File</h3>
                         <p class="text-muted" style="font-size: 15px;">
-                            Upload a plain text file. The system will split the file into 3 blocks, encrypt each block with AES, and record the transaction on the Ethereum blockchain.
+                            Upload any file format (PDF, DOCX, Images, Video, Audio, Archives, Code, or Text). The system encrypts the binary payload with AES-256-GCM, splits ciphertext into 3 verifiable blocks, and records the transaction receipt on the Ethereum blockchain.
                         </p>
                     </center>
 
@@ -111,8 +111,8 @@
                                     <input type="text" class="form-control" name="keyword" placeholder="Enter File Keyword" required="" />
                                 </div>
                                 <div class="form-group">
-                                    <label><b>Select File :</b></label>
-                                    <input type="file" name="fileToUpload" onchange="loadFile(this)" class="form-control" accept="text/plain" required />
+                                    <label><b>Select File (All Formats Supported) :</b></label>
+                                    <input type="file" name="fileToUpload" onchange="loadFile(this)" class="form-control" required />
                                 </div>
                                 <div class="form-group">
                                     <label>Preview File :</label><br>

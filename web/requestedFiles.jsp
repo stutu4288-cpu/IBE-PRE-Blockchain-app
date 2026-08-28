@@ -142,11 +142,15 @@
                                 </tr>
                                 <%
                                     String doid = (String) session.getAttribute("doid");
+                                    String doname = (String) session.getAttribute("doname");
                                     Connection con = SQLconnection.getconnection();
-                                    if (con != null && doid != null) {
+                                    if (con != null && (doid != null || doname != null)) {
                                         try {
-                                            PreparedStatement ps = con.prepareStatement("SELECT * FROM request WHERE doid=? ORDER BY id DESC");
-                                            ps.setString(1, doid);
+                                            PreparedStatement ps = con.prepareStatement(
+                                                "SELECT * FROM request WHERE doid=? OR doname=? OR doid IN (SELECT id FROM do_reg WHERE name=?) ORDER BY id DESC");
+                                            ps.setString(1, doid != null ? doid : "");
+                                            ps.setString(2, doname != null ? doname : "");
+                                            ps.setString(3, doname != null ? doname : "");
                                             ResultSet rs = ps.executeQuery();
                                             while (rs.next()) {
                                                 String rid = rs.getString("id");

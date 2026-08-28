@@ -72,25 +72,31 @@ CREATE TABLE IF NOT EXISTS `download` (
 CREATE TABLE IF NOT EXISTS `request` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `uid` varchar(45) NOT NULL,
-  `uname` varchar(45) NOT NULL,
-  `umail` varchar(45) NOT NULL,
-  `filename` varchar(45) NOT NULL,
-  `filekeyword` varchar(45) NOT NULL,
+  `uname` varchar(255) NOT NULL,
+  `umail` varchar(255) NOT NULL,
+  `filename` varchar(255) NOT NULL,
+  `filekeyword` varchar(255) DEFAULT NULL,
   `time` varchar(45) NOT NULL,
+  `fid` varchar(45) NOT NULL,
   `doid` varchar(45) NOT NULL,
-  `doname` varchar(45) NOT NULL,
+  `doname` varchar(255) DEFAULT NULL,
+  `dkey` varchar(455) DEFAULT NULL,
+  `status` varchar(45) NOT NULL DEFAULT 'waiting',
   `dostatus` varchar(45) NOT NULL DEFAULT 'waiting',
   `rdkey` varchar(450) NOT NULL DEFAULT 'waiting',
   `tx_hash` varchar(100) DEFAULT NULL,
+  `granted_time` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `login_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ip_address` varchar(45) NOT NULL,
   `user_type` varchar(45) NOT NULL,
-  `user_identifier` varchar(255) NOT NULL,
-  `attempt_time` datetime NOT NULL,
+  `user_id` varchar(45) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `ip_address` varchar(45) NOT NULL,
+  `status` varchar(45) NOT NULL,
+  `login_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 

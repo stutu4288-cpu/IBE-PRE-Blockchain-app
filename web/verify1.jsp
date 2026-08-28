@@ -54,7 +54,7 @@
                     <ul>
                         <li><a href="duHome.jsp">Home</a></li>
                         <li><a href="searchFile.jsp">Search File</a></li>
-                        <li><a style="color:#eb5d1e" href="downloadFiles.jsp">Download Files</a></li>
+                        <li><a style="color:#eb5d1e" href="downloadFiles.jsp">My Requests & Downloads</a></li>
                         <li><a href="index.jsp">Logout</a></li>
                     </ul>
                 </nav><!-- .nav-menu -->
@@ -96,8 +96,14 @@
                                     <input type="text" class="form-control" name="filename" value="<%=rs.getString("filename")%>" required="" />
                                 </div>
                                 <div class="form-group">
-                                    <label><b>File Content:</b></label>
-                                    <textarea class="form-control" style=" height: 160px;resize: none" readonly="" name="data"><%=rs1.getString("reencrypt_data")%></textarea>
+                                    <label><b>Encrypted Payload Preview:</b></label>
+                                    <% 
+                                        String encPayload = rs1.getString("reencrypt_data");
+                                        if (encPayload != null && encPayload.length() > 500) {
+                                            encPayload = encPayload.substring(0, 500) + "\n... [Binary/Media Encrypted Payload - Click Download to get complete file]";
+                                        }
+                                    %>
+                                    <textarea class="form-control" style="height: 160px; resize: none; font-family: monospace; font-size: 13px;" readonly="" name="data"><%=encPayload != null ? encPayload : ""%></textarea>
                                 </div>
                                 <div class="form-group">
                                     <button type="submit" class="btn btn-success btn-lg">Download</button>

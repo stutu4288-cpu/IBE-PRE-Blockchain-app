@@ -86,7 +86,7 @@
                     <ul>
                         <li><a href="duHome.jsp">Home</a></li>
                         <li><a style="color:#eb5d1e" href="searchFile.jsp">Search File</a></li>
-                        <li><a href="downloadFiles.jsp">Download Files</a></li>
+                        <li><a href="downloadFiles.jsp">My Requests & Downloads</a></li>
                         <li><a href="index.jsp">Logout</a></li>
                     </ul>
                 </nav><!-- .nav-menu -->
@@ -99,7 +99,24 @@
                 <div class="container" data-aos="fade-up">
                     <div class="row">
                         <div class="col-lg-12 pt-4 pt-lg-0 order-2 order-lg-1 content" data-aos="fade-right" data-aos-delay="100">
-                            <center><h3>Searched Files</h3></center><br><table id="customers">
+                            <center>
+                                <h3>Searched Files</h3>
+                                <% if (request.getParameter("Requestsent") != null) { %>
+                                    <div class="alert alert-success text-center font-weight-bold" style="font-size: 16px; margin: 15px 0;">
+                                        <i class="icofont-check-circled"></i> File Access Request Submitted Successfully! You can track approval status under <a href="downloadFiles.jsp" class="alert-link">My Requests</a>.
+                                    </div>
+                                <% } %>
+                                <% if (request.getParameter("Already_Requested") != null) { %>
+                                    <div class="alert alert-warning text-center font-weight-bold" style="font-size: 16px; margin: 15px 0;">
+                                        <i class="icofont-warning"></i> File Access Request Already Submitted Previously! Check status under <a href="downloadFiles.jsp" class="alert-link">My Requests</a>.
+                                    </div>
+                                <% } %>
+                                <% if (request.getParameter("failed") != null) { %>
+                                    <div class="alert alert-danger text-center font-weight-bold" style="font-size: 16px; margin: 15px 0;">
+                                        <i class="icofont-exclamation-circle"></i> Failed to submit access request. Please try again.
+                                    </div>
+                                <% } %>
+                            </center><br><table id="customers">
                                 <tr>
                                     <th>File ID</th>
                                     <th>File Name</th>

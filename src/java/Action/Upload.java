@@ -18,6 +18,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -47,98 +48,99 @@ public class Upload extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     File file;
-    final String filepath = "D:/";
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
         try {
-            MultipartRequest m = new MultipartRequest(request, filepath);
+            String filepath = System.getProperty("java.io.tmpdir");
+            if (filepath == null || filepath.isEmpty()) {
+                filepath = "C:/xampp/tomcat/temp/";
+            }
+            File tempDir = new File(filepath);
+            if (!tempDir.exists()) {
+                tempDir.mkdirs();
+            }
+            MultipartRequest m = new MultipartRequest(request, filepath, 100 * 1024 * 1024);
             String filekeyword = m.getParameter("keyword");
             File file = m.getFile("fileToUpload");
-            String filename = file.getName().toLowerCase();
-
-            String data = "null";
-
-            Connection con = SQLconnection.getconnection();
-
-            BufferedReader br = new BufferedReader(new FileReader(filepath + filename));
-            StringBuffer sb = new StringBuffer();
-            String temp = null;
-
-            while ((temp = br.readLine()) != null) {
-                sb.append(temp + "\n");
+            if (file == null) {
+                java.util.Enumeration files = m.getFileNames();
+                if (files != null && files.hasMoreElements()) {
+                    String fNameKey = (String) files.nextElement();
+                    file = m.getFile(fNameKey);
+                }
             }
+            if (file == null || !file.exists()) {
+                response.sendRedirect("uploadFile.jsp?msg=Upload_File_Not_Found");
+                return;
+            }
+            String filename = file.getName();
+
+            byte[] fileBytes = java.nio.file.Files.readAllBytes(file.toPath());
+            String origHash = CryptoUtils.sha256(fileBytes);
+            String rawBase64Content = Base64.getEncoder().encodeToString(fileBytes);
 
             KeyGenerator Attrib_key = KeyGenerator.getInstance("AES");
             Attrib_key.init(128);
             SecretKey secretKey = Attrib_key.generateKey();
-            System.out.println("++++++++ key:" + secretKey);
 
             Encryption e = new Encryption();
-            String encryptedtext = e.encrypt(sb.toString(), secretKey);
+            byte[] encBytes = e.encryptGCM(fileBytes, secretKey);
+            String encryptedtext = Base64.getEncoder().encodeToString(encBytes);
 
-            int hash1 = encryptedtext.hashCode();
             byte[] b = secretKey.getEncoded();
             String Dkey = Base64.getEncoder().encodeToString(b);
-            System.out.println("converted secretkey to string:" + Dkey);
-
-            BufferedReader br1 = new BufferedReader(new FileReader(filepath + filename));
-            StringBuffer sb1 = new StringBuffer();
-            String temp1 = null;
-
-            while ((temp1 = br1.readLine()) != null) {
-                sb1.append(temp1 + "\n");
-            }
 
             KeyGenerator Attrib_key1 = KeyGenerator.getInstance("AES");
             Attrib_key1.init(128);
             SecretKey secretKey1 = Attrib_key1.generateKey();
-            System.out.println("++++++++ key1:" + secretKey1);
 
             long aTime = System.nanoTime();
             
             Encryption e1 = new Encryption();
-            String encryptedtext1 = e1.encrypt(sb1.toString(), secretKey1);
+            byte[] encBytes1 = e1.encryptGCM(fileBytes, secretKey1);
+            String encryptedtext1 = Base64.getEncoder().encodeToString(encBytes1);
             
             long bTime = System.nanoTime();
-            float encryptTime = (bTime - aTime) / 1000;
-            System.out.println("Time taken to Encrypt File: " + encryptTime + " microseconds.");
+            float encryptTime = (float)(bTime - aTime) / 1000;
             
-            //storing re-encrypted file
-            FileWriter fw1 = new FileWriter(file);
-            fw1.write(encryptedtext1);
-            int hash2 = encryptedtext1.hashCode();
-            fw1.close();
             byte[] b1 = secretKey1.getEncoded();
-            String RDkey = java.util.Base64.getEncoder().encodeToString(b1);
-            System.out.println("converted secretkey to string:" + RDkey);
+            String RDkey = Base64.getEncoder().encodeToString(b1);
 
             HttpSession user = request.getSession(true);
-            String doname = user.getAttribute("doname").toString();
-            String doid = user.getAttribute("doid").toString();
+            String doname = user.getAttribute("doname") != null ? user.getAttribute("doname").toString() : "DataOwner";
+            String doid = user.getAttribute("doid") != null ? user.getAttribute("doid").toString() : "1";
 
             DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             Date date = new Date();
             String time = dateFormat.format(date);
-            System.out.println("current Date " + time);
 
-            //boolean status = new DRIVE_Network().upload(file);
-           // if (status) {
+            Connection con = SQLconnection.getconnection();
+            PreparedStatement pstm = con.prepareStatement(
+                "insert into do_files(doid, doname, data_file, dkey, time, filename, data, filekeyword, reencrypt_file, rdkey, hashcode, enc_time, enc_data, reencrypt_data) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            pstm.setString(1, doid);
+            pstm.setString(2, doname);
+            pstm.setBinaryStream(3, new java.io.ByteArrayInputStream(encBytes), encBytes.length);
+            pstm.setString(4, Dkey);
+            pstm.setString(5, time);
+            pstm.setString(6, file.getName());
+            pstm.setBinaryStream(7, new java.io.ByteArrayInputStream(fileBytes), fileBytes.length);
+            pstm.setString(8, filekeyword);
+            pstm.setBinaryStream(9, new java.io.ByteArrayInputStream(encBytes1), encBytes1.length);
+            pstm.setString(10, RDkey);
+            pstm.setInt(11, origHash.hashCode());
+            pstm.setFloat(12, encryptTime);
+            pstm.setBinaryStream(13, new java.io.ByteArrayInputStream(encBytes), encBytes.length);
+            pstm.setBinaryStream(14, new java.io.ByteArrayInputStream(encBytes1), encBytes1.length);
 
-                Statement st = con.createStatement();
-
-                System.out.println("Check------------------------------------------------------------------>>>>>");
-
-                int i = st.executeUpdate("insert into do_files(doid, doname, data_file, dkey, time, filename, data, filekeyword, reencrypt_file, rdkey, hashcode, enc_time)values('" + doid + "','" + doname + "','" + encryptedtext + "','" + Dkey + "','" + time + "','" + file.getName() + "','" + sb.toString() + "', '" + filekeyword + "', '" + encryptedtext1 + "', '" + RDkey + "','" + hash2 + "','"+ encryptTime +"')");
-                if (i != 0) {
-                    response.sendRedirect("uploadFile.jsp?File_uploaded");
-
-                } else {
-                    System.out.println("Error in SQL Syntex");
-                }
-            //}
+            int i = pstm.executeUpdate();
+            if (i != 0) {
+                response.sendRedirect("uploadFile.jsp?File_uploaded");
+            } else {
+                response.sendRedirect("uploadFile.jsp?Upload_Failed");
+            }
         } catch (Exception e) {
             out.println(e);
         } finally {
