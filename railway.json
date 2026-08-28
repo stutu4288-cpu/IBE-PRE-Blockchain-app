@@ -6,9 +6,9 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "catalina.sh run",
-    "healthcheckPath": "/index.jsp",
-    "healthcheckTimeout": 300,
+    "startCommand": "python -u app.py",
+    "healthcheckPath": "/",
+    "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }
