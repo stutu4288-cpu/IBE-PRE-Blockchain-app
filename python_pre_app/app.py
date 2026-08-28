@@ -2023,8 +2023,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
             db.close()
 
             # Dispatch live SMTP email notification with Private Key (replicating Java Mail.secretMail)
-            mail_body = f"Hello {user_name},\n\nYour Data Owner account registration has been APPROVED by the Trusted Authority (KGC).\n\nYour Cryptographic Private Key for login is:\n{priv_key}\n\nLogin URL: http://127.0.0.1:8000/login?role=owner\n\nThank you,\nTrusted Authority (KGC)"
-            mail_sender.secret_mail(mail_body, user_name, user_email)
+            app_url = "https://ibe-pre-blockchain-app-production.up.railway.app/login?role=owner"
+            mail_body = f"Hello {user_name},\n\nYour Data Owner account registration has been APPROVED by the Trusted Authority (KGC).\n\nYour Cryptographic Private Key for login is:\n{priv_key}\n\nLogin URL: {app_url}\n\nThank you,\nTrusted Authority (KGC)"
+            mail_sender.secret_mail(mail_body, "Approved", user_email)
 
         self.redirect("/ta/owners?Approved=1")
 
@@ -2047,8 +2048,9 @@ class WebAppHandler(BaseHTTPRequestHandler):
             db.close()
 
             # Dispatch live SMTP email notification with Private Key (replicating Java Mail.secretMail)
-            mail_body = f"Hello {user_name},\n\nYour Data User account registration has been APPROVED by the Trusted Authority (KGC).\n\nYour Cryptographic Private Key for login is:\n{priv_key}\n\nLogin URL: http://127.0.0.1:8000/login?role=user\n\nThank you,\nTrusted Authority (KGC)"
-            mail_sender.secret_mail(mail_body, user_name, user_email)
+            app_url = "https://ibe-pre-blockchain-app-production.up.railway.app/login?role=user"
+            mail_body = f"Hello {user_name},\n\nYour Data User account registration has been APPROVED by the Trusted Authority (KGC).\n\nYour Cryptographic Private Key for login is:\n{priv_key}\n\nLogin URL: {app_url}\n\nThank you,\nTrusted Authority (KGC)"
+            mail_sender.secret_mail(mail_body, "Approved", user_email)
 
         self.redirect("/ta/users?Approved=1")
 
@@ -2673,6 +2675,11 @@ class WebAppHandler(BaseHTTPRequestHandler):
             c.execute(sql_ins, (name, email, dob, gender, phone, address, pwd, reg_date))
             db.commit()
             db.close()
+
+            # Dispatch live registration confirmation email
+            role_label = "Data Owner" if role == "OWNER" else "Data User"
+            mail_sender.send_registration_pending_email(email, name, role_label)
+
             self.redirect(f"/login?role={role_slug}&msg=pending_approval")
         except Exception as ex:
             sys.stderr.write(f"[Register Exception] {ex}\n")
