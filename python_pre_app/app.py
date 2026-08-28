@@ -56,6 +56,16 @@ def parse_multipart(body_bytes: bytes, ctype_header: str):
     return fields, files
 
 
+def get_param_val(data_dict, key, default=""):
+    """Safely extracts parameter string whether input dictionary values are lists or scalars."""
+    if not data_dict or key not in data_dict:
+        return default
+    val = data_dict[key]
+    if isinstance(val, (list, tuple)):
+        return str(val[0]).strip() if len(val) > 0 else default
+    return str(val).strip()
+
+
 class WebAppHandler(BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
@@ -1666,11 +1676,16 @@ class WebAppHandler(BaseHTTPRequestHandler):
         db = database.get_connection()
         c = db.cursor()
         c.execute("SELECT COUNT(*) as count FROM do_reg")
-        owner_count = c.fetchone()['count'] if db.is_mysql else c.fetchone()[0]
+        r_owner = c.fetchone()
+        owner_count = (r_owner['count'] if isinstance(r_owner, dict) else r_owner[0]) if r_owner else 0
+
         c.execute("SELECT COUNT(*) as count FROM du_reg")
-        user_count = c.fetchone()['count'] if db.is_mysql else c.fetchone()[0]
+        r_user = c.fetchone()
+        user_count = (r_user['count'] if isinstance(r_user, dict) else r_user[0]) if r_user else 0
+
         c.execute("SELECT COUNT(*) as count FROM request")
-        req_count = c.fetchone()['count'] if db.is_mysql else c.fetchone()[0]
+        r_req = c.fetchone()
+        req_count = (r_req['count'] if isinstance(r_req, dict) else r_req[0]) if r_req else 0
         db.close()
 
         content = f"""
@@ -2471,19 +2486,19 @@ class WebAppHandler(BaseHTTPRequestHandler):
     # =========================================================================
 
     def process_login(self, params):
-        role_raw = params.get('role', ['OWNER'])[0].strip().upper()
+        role_raw = get_param_val(params, 'role', 'OWNER').upper()
         if role_raw in ['OWNER', 'DO']:
             role = "OWNER"
         elif role_raw in ['USER', 'DU']:
             role = "USER"
         else:
             role = role_raw
-        identifier = params.get('email', [''])[0].strip()
-        pwd = params.get('password', [''])[0].strip()
-        user_pkey = params.get('private_key', [''])[0].strip()
+        identifier = get_param_val(params, 'email')
+        pwd = get_param_val(params, 'password')
+        user_pkey = get_param_val(params, 'private_key')
 
         if role == "CSP":
-            cspkey = params.get('cspkey', [''])[0].strip()
+            cspkey = get_param_val(params, 'cspkey')
             if (identifier.lower() == "csp" or identifier == "admin@csp.com") and pwd == "CSP":
                 sess_data = {"user_id": "0", "name": "Cloud Service Provider (CSP)", "email": "csp@cloud.net", "user_type": "CSP"}
                 self.log_audit("CSP", "0", identifier, "SUCCESS")
@@ -2562,16 +2577,16 @@ class WebAppHandler(BaseHTTPRequestHandler):
         self.redirect(dest, cookie)
 
     def process_register(self, params):
-        role = params.get('role', ['OWNER'])[0].upper()
-        name = (params.get('name', [''])[0] or params.get('username', [''])[0]).strip()
-        email = params.get('email', [''])[0].strip()
-        pwd = (params.get('password', [''])[0] or params.get('pass', [''])[0]).strip()
-        dob = params.get('dob', ['2000-01-01'])[0].strip()
-        gender = params.get('gender', ['Male'])[0].strip()
-        country_code = params.get('country_code', ['+233'])[0].strip()
-        raw_phone = params.get('phone', [''])[0].strip().lstrip('0')
+        role = get_param_val(params, 'role', 'OWNER').upper()
+        name = get_param_val(params, 'name') or get_param_val(params, 'username')
+        email = get_param_val(params, 'email')
+        pwd = get_param_val(params, 'password') or get_param_val(params, 'pass')
+        dob = get_param_val(params, 'dob', '2000-01-01')
+        gender = get_param_val(params, 'gender', 'Male')
+        country_code = get_param_val(params, 'country_code', '+233')
+        raw_phone = get_param_val(params, 'phone').lstrip('0')
         phone = f"{country_code}{raw_phone}" if raw_phone else ""
-        address = params.get('address', [''])[0].strip()
+        address = get_param_val(params, 'address')
 
         role_slug = 'owner' if role == 'OWNER' else 'user'
         if not name or not email or not pwd:
@@ -2801,8 +2816,8 @@ class WebAppHandler(BaseHTTPRequestHandler):
         self.redirect("/owner/upload?File_uploaded=1")
 
     def handle_download_file(self, query, sess):
-        fid = query.get('fid', [''])[0]
-        user_rekey = query.get('rdkey', [''])[0]
+        fid = get_param_val(query, 'fid')
+        user_rekey = get_param_val(query, 'rdkey')
 
         db = database.get_connection()
         c = db.cursor()
